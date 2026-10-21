@@ -1,0 +1,25 @@
+<%- include('../partials/head') %>
+<p class="mt"><a href="/don-hang">← Đơn hàng của tôi</a></p>
+<% if (isNew) { %><div class="card mb" style="border-color:var(--ok)"><h2>🎉 Cảm ơn bạn đã đặt hàng!</h2>
+  <p>Đơn hàng <strong>#<%= o.MaDH %></strong> đang chờ cửa hàng xác nhận.</p>
+  <% if (o.TenPT === 'QR') { %><p class="card" style="background:var(--cream)"><strong>Chuyển khoản:</strong> Ngân hàng MB · STK <strong>0123456789</strong> · Chủ TK: CONG TY DAILYMAN · Số tiền <strong><%= h.money(o.TongThanhToan) %></strong> · Nội dung: <strong>DM<%= o.MaDH %></strong><br><span class="muted small">(Thông tin minh họa — hệ thống chưa tích hợp cổng thanh toán thật.)</span></p><% } %></div><% } %>
+<div class="row"><h1>Đơn hàng #<%= o.MaDH %></h1><span class="badge st-<%= o.MaTrangThai %>"><%= o.TenTrangThai %></span><span class="spacer"></span>
+  <% if (canCancel) { %><form method="post" action="/don-hang/<%= o.MaDH %>/huy" data-confirm="Bạn chắc chắn muốn hủy đơn này?"><button class="btn danger sm">Hủy đơn</button></form><% } else { %><button class="btn sm" disabled title="Chỉ hủy được khi đơn còn Chờ xác nhận">Hủy đơn</button><% } %></div>
+<div class="cols">
+  <div>
+    <div class="scroll"><table><thead><tr><th>Sản phẩm</th><th>Đơn giá</th><th>SL</th><th>Thành tiền</th></tr></thead><tbody>
+      <% o.lines.forEach(function (l) { %><tr><td><div class="cell"><div class="tbl-thumb"><%- include('../partials/thumb', { p: l }) %></div><div><a href="/san-pham/<%= l.MaSP %>"><%= l.TenSP %></a><br><span class="muted small"><%= l.TenMau %> / <%= l.TenSize %></span></div></div></td>
+        <td><%= h.money(l.DonGia) %></td><td><%= l.SoLuong %></td><td><%= h.money(l.DonGia * l.SoLuong) %></td></tr><% }) %></tbody></table></div>
+    <div class="card mt"><h3>Tiến trình đơn hàng</h3>
+      <ul class="timeline"><% o.history.forEach(function (x) { %><li><strong><%= x.TenTrangThai %></strong> <span class="muted small">· <%= h.fmtDate(x.ThoiGian) %></span><br><span class="muted small"><%= x.GhiChu %></span></li><% }) %></ul></div>
+  </div>
+  <aside class="card">
+    <h3>Giao đến</h3><p><strong><%= o.TenNguoiNhan %></strong><br><%= o.SDTNguoiNhan %><br><%= o.DiaChiGiao %><% if (o.GhiChu) { %><br><span class="muted small">Ghi chú: <%= o.GhiChu %></span><% } %></p>
+    <div class="sum-row"><span>Tạm tính</span><span><%= h.money(o.TienHang) %></span></div>
+    <div class="sum-row"><span>Giảm giá<%= o.MaCode ? ' (' + o.MaCode + ')' : '' %></span><span>-<%= h.money(o.TienGiam) %></span></div>
+    <div class="sum-row"><span>Phí vận chuyển</span><span><%= o.PhiVanChuyen ? h.money(o.PhiVanChuyen) : 'Miễn phí' %></span></div>
+    <div class="sum-row total"><span>Tổng cộng</span><span><%= h.money(o.TongThanhToan) %></span></div>
+    <p class="muted small">Thanh toán: <%= o.TenPT %> · <%= o.TrangThaiTT %></p>
+  </aside>
+</div>
+<%- include('../partials/foot') %>

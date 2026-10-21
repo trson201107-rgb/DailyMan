@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title><%= title %> | dailyman Admin</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<div class="admin">
+  <aside class="side">
+    <a class="logo" href="/">daily<b>man</b> <span class="small">admin</span></a>
+    <% var isAdmin = user.role === 'Admin'; %>
+    <% if (isAdmin) { %><a href="/admin" class="<%= path === '/admin' ? 'active' : '' %>">📊 Tổng quan</a><% } %>
+    <a href="/admin/don-hang" class="<%= path.indexOf('/admin/don-hang') === 0 ? 'active' : '' %>">📦 Đơn hàng</a>
+    <a href="/admin/san-pham" class="<%= path.indexOf('/admin/san-pham') === 0 ? 'active' : '' %>">👕 Sản phẩm &amp; tồn kho</a>
+    <% if (isAdmin) { %><a href="/admin/danh-muc" class="<%= path.indexOf('/admin/danh-muc') === 0 ? 'active' : '' %>">🗂 Danh mục</a><% } %>
+    <a href="/admin/tai-khoan" class="<%= path.indexOf('/admin/tai-khoan') === 0 ? 'active' : '' %>">👥 <%= isAdmin ? 'Tài khoản' : 'Khách hàng' %></a>
+    <a href="/">↗ Xem cửa hàng</a>
+    <div class="who"><%= user.name %><br><span class="muted"><%= user.role %></span>
+      <form method="post" action="/dang-xuat" style="margin-top:8px"><button class="btn sm ghost" type="submit">Đăng xuất</button></form></div>
+  </aside>
+  <div class="main">
+  <% if (flash) { %><div class="flash <%= flash.type %>"><%= flash.msg %></div><% } %>

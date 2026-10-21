@@ -1,0 +1,1 @@
+<% if (p.AnhDaiDien) { %><img class="thumb-img" src="<%= p.AnhDaiDien %>" alt="<%= p.TenSP %>" loading="lazy"><% } else { %><div class="ph ph-c<%= (p.MaDM || 0) % 6 %>"><span><%= String(p.TenSP || '?').trim().charAt(0).toUpperCase() %></span></div><% } %>
