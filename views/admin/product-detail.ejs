@@ -1,0 +1,37 @@
+<%- include('../partials/admin-head') %>
+<p><a href="/admin/san-pham">← Danh sách sản phẩm</a></p>
+<div class="row mb"><h1 style="margin:0"><%= p.TenSP %></h1>
+  <% if (p.TrangThai === 'Đang bán') { %><span class="badge ok">Đang bán</span><% } else { %><span class="badge hidden">Đã ẩn</span><% } %>
+  <span class="spacer"></span>
+  <% if (user.role === 'Admin') { %>
+    <a class="btn ghost" href="/admin/san-pham/<%= p.MaSP %>/sua">Sửa thông tin</a>
+    <% if (p.TrangThai === 'Đang bán') { %><form method="post" action="/admin/san-pham/<%= p.MaSP %>/an" data-confirm="Ẩn sản phẩm này?"><button class="btn ghost">Ẩn</button></form>
+    <% } else { %><form method="post" action="/admin/san-pham/<%= p.MaSP %>/hien"><button class="btn ghost">Hiện lại</button></form>
+      <form method="post" action="/admin/san-pham/<%= p.MaSP %>/xoa" data-confirm="XÓA VĨNH VIỄN sản phẩm này?"><button class="btn danger">Xóa vĩnh viễn</button></form><% } %>
+  <% } %></div>
+<div class="grid2">
+  <div class="card"><div class="cell" style="align-items:flex-start"><div class="tbl-thumb" style="width:110px;height:140px"><%- include('../partials/thumb', { p: p }) %></div>
+    <div><p><strong><%= h.money(p.GiaBan) %></strong> · <%= p.TenDM %></p><p><%= p.MoTa %></p>
+      <p><% if (p.LaHot) { %><span class="badge hot">Hot</span> <% } %><% if (p.LaMoi) { %><span class="badge new">Mới</span> <% } %><span class="muted small"><%= p.LuotXem %> lượt xem · tổng tồn <%= p.TongTon %></span></p></div></div></div>
+  <div class="card audit"><h3>Lịch sử bản ghi</h3>
+    Ngày tạo: <strong><%= h.fmtDate(p.NgayTao) %></strong> — bởi <strong><%= p.TenNguoiTao || '—' %></strong><br>
+    Cập nhật gần nhất: <strong><%= p.NgayCapNhat ? h.fmtDate(p.NgayCapNhat) : '—' %></strong> — bởi <strong><%= p.TenNguoiCapNhat || '—' %></strong></div>
+</div>
+<h2 class="mt">Biến thể &amp; tồn kho</h2>
+<% if (!variants.length) { %><p class="muted">Chưa có biến thể nào.</p><% } else { %>
+<div class="scroll"><table><thead><tr><th>SKU</th><th>Màu</th><th>Size</th><th>Tồn kho</th><th></th></tr></thead><tbody>
+  <% variants.forEach(function (v) { %><tr><td><%= v.SKU %></td><td><i class="dot" style="background:<%= v.MaHex || '#ddd' %>"></i> <%= v.TenMau %></td><td><%= v.TenSize %></td>
+    <td><form class="inline-form" method="post" action="/admin/bien-the/<%= v.MaBT %>/ton-kho"><input type="number" name="ton" min="0" value="<%= v.SoLuongTon %>"><button class="btn sm">Lưu</button>
+      <% if (v.SoLuongTon === 0) { %><span class="badge out">Hết</span><% } else if (v.SoLuongTon <= 3) { %><span class="badge low">Sắp hết</span><% } %></form></td>
+    <td><% if (user.role === 'Admin') { %><form method="post" action="/admin/bien-the/<%= v.MaBT %>/xoa" data-confirm="Xóa biến thể này?"><button class="btn sm ghost">Xóa</button></form><% } %></td></tr><% }) %>
+</tbody></table></div><% } %>
+<% if (user.role === 'Admin') { %>
+<div class="card mt"><h3>Thêm biến thể</h3>
+  <form method="post" action="/admin/san-pham/<%= p.MaSP %>/bien-the" class="toolbar">
+    <div><label>Màu</label><select name="mau" required><option value="">Chọn màu</option><% colors.forEach(function (c) { %><option value="<%= c.MaMau %>"><%= c.TenMau %></option><% }) %></select></div>
+    <div><label>Size</label><select name="size" required><option value="">Chọn size</option><% sizes.forEach(function (s) { %><option value="<%= s.MaSize %>"><%= s.TenSize %></option><% }) %></select></div>
+    <div><label>SKU (bỏ trống = tự sinh)</label><input name="sku" maxlength="30"></div>
+    <div><label>Tồn kho</label><input name="ton" type="number" min="0" value="0" style="width:90px"></div>
+    <button class="btn camel">Thêm</button></form></div>
+<% } %>
+<%- include('../partials/admin-foot') %>

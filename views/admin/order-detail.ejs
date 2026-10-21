@@ -1,0 +1,25 @@
+<%- include('../partials/admin-head') %>
+<p><a href="/admin/don-hang">← Danh sách đơn</a></p>
+<div class="row mb"><h1 style="margin:0">Đơn hàng #<%= o.MaDH %></h1><span class="badge st-<%= o.MaTrangThai %>"><%= o.TenTrangThai %></span><span class="spacer"></span>
+  <% if (o.MaTrangThai < S.HOAN_THANH) { %><form method="post" action="/admin/don-hang/<%= o.MaDH %>/trang-thai"><button class="btn camel">Chuyển → <%= ['', 'Đã xác nhận', 'Đang đóng gói', 'Đang giao', 'Hoàn thành'][o.MaTrangThai] %></button></form><% } %></div>
+<div class="cols">
+  <div>
+    <div class="scroll"><table><thead><tr><th>Sản phẩm</th><th>SKU</th><th>Đơn giá</th><th>SL</th><th>Thành tiền</th></tr></thead><tbody>
+      <% o.lines.forEach(function (l) { %><tr><td><%= l.TenSP %><br><span class="muted small"><%= l.TenMau %> / <%= l.TenSize %></span></td><td class="small"><%= l.SKU %></td><td><%= h.money(l.DonGia) %></td><td><%= l.SoLuong %></td><td><%= h.money(l.DonGia * l.SoLuong) %></td></tr><% }) %></tbody></table></div>
+    <div class="card mt"><h3>Nhật ký trạng thái</h3><ul class="timeline"><% o.history.forEach(function (x) { %><li><strong><%= x.TenTrangThai %></strong> <span class="muted small">· <%= h.fmtDate(x.ThoiGian) %> · <%= x.NguoiDoi || 'Hệ thống / khách' %></span><br><span class="muted small"><%= x.GhiChu %></span></li><% }) %></ul></div>
+  </div>
+  <aside>
+    <div class="card"><h3>Khách hàng</h3><p><strong><%= o.HoTen %></strong><br><%= o.Email %><br><%= o.SoDienThoai %></p>
+      <h3>Giao đến</h3><p><strong><%= o.TenNguoiNhan %></strong> · <%= o.SDTNguoiNhan %><br><%= o.DiaChiGiao %><% if (o.GhiChu) { %><br><span class="muted small">Ghi chú: <%= o.GhiChu %></span><% } %></p>
+      <div class="sum-row"><span>Tạm tính</span><span><%= h.money(o.TienHang) %></span></div>
+      <div class="sum-row"><span>Giảm giá<%= o.MaCode ? ' (' + o.MaCode + ')' : '' %></span><span>-<%= h.money(o.TienGiam) %></span></div>
+      <div class="sum-row"><span>Phí vận chuyển</span><span><%= h.money(o.PhiVanChuyen) %></span></div>
+      <div class="sum-row total"><span>Tổng cộng</span><span><%= h.money(o.TongThanhToan) %></span></div>
+      <p class="muted small"><%= o.TenPT %> · <%= o.TrangThaiTT %></p></div>
+    <% if (o.MaTrangThai <= S.DONG_GOI) { %>
+    <div class="card mt"><h3>Hủy đơn</h3><form method="post" action="/admin/don-hang/<%= o.MaDH %>/huy" data-confirm="Hủy đơn và hoàn lại tồn kho?">
+      <label>Lý do hủy *</label><input name="lyDo" required maxlength="200"><button class="btn danger block mt">Hủy đơn &amp; hoàn tồn kho</button></form></div>
+    <% } %>
+  </aside>
+</div>
+<%- include('../partials/admin-foot') %>

@@ -1,0 +1,58 @@
+<%- include('../partials/head') %>
+<% var catName = (categories.find(function (c) { return c.MaDM === f.dm; }) || {}).TenDM; %>
+<h1 class="mt"><%= catName || (f.tag === 'hot' ? 'Sản phẩm Hot' : f.tag === 'moi' ? 'Hàng mới' : 'Tất cả sản phẩm') %></h1>
+<div class="shop">
+  <aside class="filters card">
+    <form method="get" action="/san-pham">
+      <input type="hidden" name="sort" value="<%= f.sort %>">
+      <h3>Tìm kiếm</h3><input name="q" value="<%= f.q %>" placeholder="Tên sản phẩm, danh mục...">
+      <h3>Danh mục</h3>
+      <div class="radio-list">
+        <label><input type="radio" name="dm" value="" <%= !f.dm ? 'checked' : '' %>> Tất cả</label>
+        <% categories.forEach(function (c) { %><label><input type="radio" name="dm" value="<%= c.MaDM %>" <%= f.dm === c.MaDM ? 'checked' : '' %>> <%= c.TenDM %></label><% }) %>
+      </div>
+      <h3>Khoảng giá (đ)</h3>
+      <div class="field-row"><input name="giaMin" inputmode="numeric" placeholder="Từ" value="<%= f.giaMin != null ? f.giaMin : '' %>"><input name="giaMax" inputmode="numeric" placeholder="Đến" value="<%= f.giaMax != null ? f.giaMax : '' %>"></div>
+      <h3>Màu sắc</h3>
+      <div class="swatches opt">
+        <label><input type="radio" name="mau" value="" <%= !f.mau ? 'checked' : '' %>><span class="swatch">Tất cả</span></label>
+        <% colors.forEach(function (c) { %><label><input type="radio" name="mau" value="<%= c.MaMau %>" <%= f.mau === c.MaMau ? 'checked' : '' %>><span class="swatch"><i class="dot" style="background:<%= c.MaHex || '#ddd' %>"></i><%= c.TenMau %></span></label><% }) %>
+      </div>
+      <h3>Size</h3>
+      <div class="opt">
+        <label><input type="radio" name="size" value="" <%= !f.size ? 'checked' : '' %>><span class="chip">Tất cả</span></label>
+        <% sizes.forEach(function (s) { %><label><input type="radio" name="size" value="<%= s.MaSize %>" <%= f.size === s.MaSize ? 'checked' : '' %>><span class="chip"><%= s.TenSize %></span></label><% }) %>
+      </div>
+      <h3>Khác</h3>
+      <div class="radio-list">
+        <label><input type="checkbox" name="conHang" value="1" <%= f.conHang ? 'checked' : '' %>> Chỉ hiện còn hàng</label>
+        <label><input type="radio" name="tag" value="" <%= !f.tag ? 'checked' : '' %>> Tất cả</label>
+        <label><input type="radio" name="tag" value="hot" <%= f.tag === 'hot' ? 'checked' : '' %>> 🔥 Hot</label>
+        <label><input type="radio" name="tag" value="moi" <%= f.tag === 'moi' ? 'checked' : '' %>> ✨ Mới</label>
+      </div>
+      <button class="btn block mt" type="submit">Áp dụng bộ lọc</button>
+      <a class="btn ghost block" style="margin-top:8px" href="/san-pham">Xóa bộ lọc</a>
+    </form>
+  </aside>
+  <section>
+    <div class="sortbar">
+      <strong><%= meta.total %> sản phẩm phù hợp</strong>
+      <form method="get" action="/san-pham" class="row">
+        <% ['q','dm','giaMin','giaMax','mau','size','tag'].forEach(function (k) { var v = f[k]; if (v !== '' && v !== null && v !== undefined) { %><input type="hidden" name="<%= k %>" value="<%= v %>"><% } }) %>
+        <% if (f.conHang) { %><input type="hidden" name="conHang" value="1"><% } %>
+        <label class="small" style="margin:0">Sắp xếp</label>
+        <select name="sort" data-autosubmit>
+          <% [['moi','Mới nhất'],['hot','Hot nhất'],['gia-tang','Giá tăng dần'],['gia-giam','Giá giảm dần'],['ten','Tên A → Z'],['dm','Danh mục']].forEach(function (o) { %><option value="<%= o[0] %>" <%= f.sort === o[0] ? 'selected' : '' %>><%= o[1] %></option><% }) %>
+        </select>
+        <noscript><button class="btn sm">OK</button></noscript>
+      </form>
+    </div>
+    <% if (!items.length) { %>
+      <div class="empty mt"><h3>Không tìm thấy sản phẩm phù hợp</h3><p class="muted">Hãy thử bỏ bớt tiêu chí lọc.</p><a class="btn" href="/san-pham">Xóa bộ lọc</a></div>
+    <% } else { %>
+      <div class="grid mt"><% items.forEach(function (p) { %><%- include('../partials/product-card', { p: p }) %><% }) %></div>
+      <%- include('../partials/pagination') %>
+    <% } %>
+  </section>
+</div>
+<%- include('../partials/foot') %>

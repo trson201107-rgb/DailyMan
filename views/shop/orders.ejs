@@ -1,0 +1,17 @@
+<%- include('../partials/head') %>
+<h1 class="mt">Đơn hàng của tôi</h1>
+<div class="tabs">
+  <a class="<%= !status ? 'on' : '' %>" href="<%= urlWith({ tt: '', page: '' }) %>">Tất cả (<%= counts.all %>)</a>
+  <% statuses.forEach(function (s) { %><a class="<%= status === s.MaTrangThai ? 'on' : '' %>" href="<%= urlWith({ tt: s.MaTrangThai, page: '' }) %>"><%= s.TenTrangThai %> (<%= counts[s.MaTrangThai] || 0 %>)</a><% }) %>
+</div>
+<form method="get" class="row mb"><input name="q" value="<%= q %>" placeholder="Tra cứu theo mã đơn" style="max-width:240px" inputmode="numeric"><% if (status) { %><input type="hidden" name="tt" value="<%= status %>"><% } %><button class="btn sm">Tra cứu</button></form>
+<% if (!items.length) { %><div class="empty"><h3>Không có đơn hàng nào</h3><a class="btn" href="/san-pham">Mua sắm ngay</a></div><% } else { %>
+<div class="scroll"><table>
+  <thead><tr><th>Mã đơn</th><th>Ngày đặt</th><th>Sản phẩm</th><th>Thanh toán</th><th>Tổng tiền</th><th>Trạng thái</th><th></th></tr></thead>
+  <tbody><% items.forEach(function (o) { %>
+    <tr><td><strong>#<%= o.MaDH %></strong></td><td><%= h.fmtDate(o.NgayDat) %></td><td><%= o.SoSanPham %> sp</td><td><%= o.TenPT %> · <span class="muted small"><%= o.TrangThaiTT %></span></td>
+      <td><strong><%= h.money(o.TongThanhToan) %></strong></td><td><span class="badge st-<%= o.MaTrangThai %>"><%= o.TenTrangThai %></span></td><td><a class="btn sm ghost" href="/don-hang/<%= o.MaDH %>">Chi tiết</a></td></tr>
+  <% }) %></tbody></table></div>
+<%- include('../partials/pagination') %>
+<% } %>
+<%- include('../partials/foot') %>
