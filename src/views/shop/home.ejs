@@ -1,0 +1,14 @@
+<%- include('../partials/head') %>
+<section class="hero">
+  <h1>Thời trang nam thường nhật — gọn gàng, dễ mặc, đủ phong cách.</h1>
+  <p>Áo thun, sơ mi, quần jeans, kaki và phụ kiện. Lọc theo size, màu, giá chỉ trong vài giây.</p>
+  <a class="btn camel" href="/san-pham">Mua ngay</a>
+</section>
+<div class="cats">
+  <% categories.forEach(function (c) { %><a class="cat" href="/san-pham?dm=<%= c.MaDM %>"><%= c.TenDM %><div class="muted small"><%= c.SoSanPham %> sản phẩm</div></a><% }) %>
+</div>
+<div class="section-title"><h2>🔥 Sản phẩm Hot</h2><a href="/san-pham?tag=hot">Xem tất cả →</a></div>
+<div class="grid"><% hot.forEach(function (p) { %><%- include('../partials/product-card', { p: p }) %><% }) %></div>
+<div class="section-title"><h2>✨ Hàng mới về</h2><a href="/san-pham?tag=moi">Xem tất cả →</a></div>
+<div class="grid"><% newest.forEach(function (p) { %><%- include('../partials/product-card', { p: p }) %><% }) %></div>
+<%- include('../partials/foot') %>
