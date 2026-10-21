@@ -1,0 +1,30 @@
+# Render Blueprint: đẩy code lên GitHub -> Render > New > Blueprint -> chọn repo. Điền các biến "sync: false" trong dashboard.
+services:
+  - type: web
+    name: dailyman
+    runtime: node
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /healthz
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: SESSION_SECRET
+        generateValue: true
+      - key: DB_SERVER
+        sync: false          # vd: ten-server.database.windows.net
+      - key: DB_PORT
+        value: "1433"
+      - key: DB_NAME
+        sync: false          # vd: ThoiTrangNam
+      - key: DB_USER
+        sync: false
+      - key: DB_PASSWORD
+        sync: false
+      - key: DB_ENCRYPT
+        value: "true"
+      - key: DB_TRUST_CERT
+        value: "false"
+      - key: DISPLAY_TZ
+        value: Asia/Ho_Chi_Minh
