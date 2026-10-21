@@ -1,0 +1,25 @@
+<%- include('../partials/admin-head') %>
+<h1>Quản lý đơn hàng</h1>
+<div class="tabs">
+  <a class="<%= !f.status ? 'on' : '' %>" href="<%= urlWith({ tt: '', page: '' }) %>">Tất cả (<%= counts.all %>)</a>
+  <% statuses.forEach(function (s) { %><a class="<%= f.status === s.MaTrangThai ? 'on' : '' %>" href="<%= urlWith({ tt: s.MaTrangThai, page: '' }) %>"><%= s.TenTrangThai %> (<%= counts[s.MaTrangThai] || 0 %>)</a><% }) %>
+</div>
+<form method="get" class="toolbar">
+  <% if (f.status) { %><input type="hidden" name="tt" value="<%= f.status %>"><% } %>
+  <div><label>Mã đơn / tên / SĐT</label><input name="q" value="<%= f.q %>"></div>
+  <div><label>Từ ngày</label><input type="date" name="tu" value="<%= f.tu %>"></div>
+  <div><label>Đến ngày</label><input type="date" name="den" value="<%= f.den %>"></div>
+  <button class="btn">Tìm</button><a class="btn ghost" href="/admin/don-hang">Xóa lọc</a>
+</form>
+<% if (!items.length) { %><div class="empty">Không có đơn hàng phù hợp.</div><% } else { %>
+<div class="scroll"><table><thead><tr><th>Mã</th><th>Khách hàng</th><th>Điện thoại</th><th>Đặt lúc</th><th>Thanh toán</th><th>Tổng tiền</th><th>Trạng thái</th><th></th></tr></thead><tbody>
+  <% items.forEach(function (o) { %><tr>
+    <td><a href="/admin/don-hang/<%= o.MaDH %>"><strong>#<%= o.MaDH %></strong></a></td><td><%= o.TenNguoiNhan %></td><td><%= o.SDTNguoiNhan %></td><td class="small"><%= h.fmtDate(o.NgayDat) %></td>
+    <td><%= o.TenPT %><br><span class="muted small"><%= o.TrangThaiTT %></span></td><td><strong><%= h.money(o.TongThanhToan) %></strong></td>
+    <td><span class="badge st-<%= o.MaTrangThai %>"><%= o.TenTrangThai %></span></td>
+    <td><div class="actions"><a class="btn sm ghost" href="/admin/don-hang/<%= o.MaDH %>">Chi tiết</a>
+      <% if (o.MaTrangThai < 5) { %><form method="post" action="/admin/don-hang/<%= o.MaDH %>/trang-thai"><button class="btn sm"><%= ['', 'Xác nhận', 'Đóng gói', 'Giao hàng', 'Hoàn thành'][o.MaTrangThai] %></button></form><% } %></div></td></tr><% }) %>
+</tbody></table></div>
+<%- include('../partials/pagination') %>
+<% } %>
+<%- include('../partials/admin-foot') %>

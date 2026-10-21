@@ -1,0 +1,23 @@
+<%- include('../partials/head') %>
+<div class="auth card">
+  <div class="tabs"><a class="<%= tab === 'login' ? 'on' : '' %>" href="/dang-nhap">Đăng nhập</a><a class="<%= tab === 'register' ? 'on' : '' %>" href="/dang-ky">Đăng ký</a></div>
+  <% if (errors.length) { %><div class="errors"><ul><% errors.forEach(function (e) { %><li><%= e %></li><% }) %></ul></div><% } %>
+  <% if (tab === 'login') { %>
+    <form method="post" action="/dang-nhap" data-once>
+      <label>Email</label><input type="email" name="email" value="<%= form.email || '' %>" required autofocus>
+      <label>Mật khẩu</label><input type="password" name="matKhau" required>
+      <button class="btn block mt" type="submit">Đăng nhập</button>
+    </form>
+    <p class="center small mt"><a href="/">Tiếp tục với tư cách khách</a></p>
+  <% } else { %>
+    <form method="post" action="/dang-ky" data-once>
+      <label>Họ tên</label><input name="hoTen" value="<%= form.hoTen || '' %>" required>
+      <label>Email</label><input type="email" name="email" value="<%= form.email || '' %>" required>
+      <label>Số điện thoại</label><input name="sdt" value="<%= form.sdt || '' %>" required inputmode="tel" placeholder="0901234567">
+      <label>Mật khẩu (tối thiểu 6 ký tự)</label><input type="password" name="matKhau" required minlength="6">
+      <label>Nhập lại mật khẩu</label><input type="password" name="matKhau2" required minlength="6">
+      <button class="btn block mt" type="submit">Tạo tài khoản</button>
+    </form>
+  <% } %>
+</div>
+<%- include('../partials/foot') %>
