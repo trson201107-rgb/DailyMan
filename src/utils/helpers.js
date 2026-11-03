@@ -10,7 +10,12 @@ const fmtDate = (d, withTime = true) => {
 };
 /** Escape ký tự đặc biệt của LIKE trong SQL Server */
 const likeEsc = (s) => '%' + String(s).trim().replace(/[\[%_]/g, (c) => '[' + c + ']') + '%';
+ sprint3/chung
+// Chỉ chấp nhận số nguyên thuần ('2', '-1'); '1.5', 'abc', '2abc' => trả về giá trị mặc định (null)
+const toInt = (v, def = null) => { const s = String(v ?? '').trim(); return /^-?\d+$/.test(s) ? parseInt(s, 10) : def; };
+
 const toInt = (v, def = null) => { const n = parseInt(v, 10); return Number.isFinite(n) ? n : def; };
+develop
 const toPrice = (v) => { const n = Number(String(v ?? '').replace(/[.,\s]/g, '')); return Number.isFinite(n) ? n : NaN; };
 
 function pageInfo(req, size = PAGE_SIZE) {
@@ -23,5 +28,19 @@ function pageMeta(total, page, size) {
 }
 /** Chỉ cho phép ảnh là đường dẫn nội bộ hoặc http(s) */
 const safeImg = (u) => { u = (u || '').trim(); return /^(https?:\/\/|\/)/i.test(u) ? u.slice(0, 255) : null; };
+ sprint3/chung
+/** Một ô CSV: bao dấu nháy, chặn công thức Excel (=, +, -, @ ở đầu ô) */
+const csvCell = (v) => {
+  let s = v === null || v === undefined ? '' : v instanceof Date ? fmtDate(v) : String(v);
+  if (/^[=+\-@\t\r]/.test(s)) s = "'" + s;
+  return /[",\r\n;]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+};
+/** Trả về chuỗi CSV có BOM UTF-8 để Excel đọc đúng tiếng Việt */
+const toCsv = (header, rows) => '\ufeff' + [header, ...rows].map((r) => r.map(csvCell).join(',')).join('\r\n') + '\r\n';
+const dateOnly = (v) => (/^\d{4}-\d{2}-\d{2}$/.test(String(v || '')) ? String(v) : '');
+const ymd = (d) => new Date(d).toISOString().slice(0, 10);
+
+module.exports = { money, fmtDate, likeEsc, toInt, toPrice, pageInfo, pageMeta, safeImg, toCsv, dateOnly, ymd };
 
 module.exports = { money, fmtDate, likeEsc, toInt, toPrice, pageInfo, pageMeta, safeImg };
+ develop

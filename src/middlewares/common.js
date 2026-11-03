@@ -2,7 +2,15 @@
 const helpers = require('../utils/helpers');
 const CartModel = require('../models/CartModel');
 
+sprint3/chung
+const C = require('../config/constants');
+
 function locals(req, res, next) {
+  // "Ghi nhớ đăng nhập": cookie phiên có hạn N ngày; không tích thì cookie hết khi đóng trình duyệt
+  if (req.session.remember && req.sessionOptions) req.sessionOptions.maxAge = C.REMEMBER_DAYS * 24 * 3600 * 1000;
+
+function locals(req, res, next) {
+ develop
   res.locals.user = req.session.user || null;
   res.locals.path = req.path;
   res.locals.h = helpers;
