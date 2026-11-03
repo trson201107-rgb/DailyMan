@@ -1,0 +1,25 @@
+<%- include('../partials/admin-head') %>
+<h1>Tổng quan</h1>
+<div class="stats">
+  <div class="stat"><div class="v"><%= h.money(sum.doanhThuThang) %></div><div class="l">Doanh thu tháng (đơn hoàn thành)</div></div>
+  <div class="stat"><div class="v"><%= sum.donThang %></div><div class="l">Đơn hàng tháng này</div></div>
+  <div class="stat"><div class="v"><%= sum.khachMoi %></div><div class="l">Khách hàng mới tháng này</div></div>
+  <div class="stat"><div class="v"><a href="/admin/don-hang?tt=1"><%= sum.choXuLy %></a></div><div class="l">Đơn chờ xác nhận</div></div>
+  <div class="stat"><div class="v"><a href="/admin/san-pham?trangThai=sap-het"><%= sum.sapHet %></a></div><div class="l">Sản phẩm sắp hết hàng</div></div>
+  <div class="stat"><div class="v"><a href="/admin/san-pham?trangThai=het-hang"><%= sum.hetHang %></a></div><div class="l">Sản phẩm hết hàng</div></div>
+</div>
+<div class="grid2">
+  <div class="card"><h3>Doanh thu 7 ngày</h3>
+    <div class="bars"><% rev.forEach(function (r) { %><div class="bar" title="<%= h.money(r.DoanhThu) %>"><i style="height:<%= Math.round(Number(r.DoanhThu) / max * 140) %>px"></i><span><%= new Date(r.Ngay).toISOString().slice(8, 10) + '/' + new Date(r.Ngay).toISOString().slice(5, 7) %></span></div><% }) %></div></div>
+  <div class="card"><h3>Bán chạy nhất</h3>
+    <% if (!best.length) { %><p class="muted">Chưa có dữ liệu.</p><% } %>
+    <ol style="margin:0;padding-left:20px"><% best.forEach(function (b) { %><li><a href="/admin/san-pham/<%= b.MaSP %>"><%= b.TenSP %></a> — <strong><%= b.DaBan %></strong> đã bán</li><% }) %></ol>
+    <h3 class="mt">Biến thể sắp hết (≤ 3)</h3>
+    <% low.forEach(function (v) { %><div class="small"><a href="/admin/san-pham/<%= v.MaSP %>"><%= v.TenSP %></a> · <%= v.SKU %> · <span class="badge <%= v.SoLuongTon === 0 ? 'out' : 'low' %>">còn <%= v.SoLuongTon %></span></div><% }) %>
+  </div>
+</div>
+<h3 class="mt">Đơn hàng gần đây</h3>
+<div class="scroll"><table><thead><tr><th>Mã</th><th>Khách</th><th>Thời gian</th><th>Giá trị</th><th>Trạng thái</th></tr></thead><tbody>
+  <% recent.forEach(function (o) { %><tr><td><a href="/admin/don-hang/<%= o.MaDH %>">#<%= o.MaDH %></a></td><td><%= o.TenNguoiNhan %></td><td><%= h.fmtDate(o.NgayDat) %></td><td><%= h.money(o.TongThanhToan) %></td><td><span class="badge st-<%= o.MaTrangThai %>"><%= o.TenTrangThai %></span></td></tr><% }) %>
+</tbody></table></div>
+<%- include('../partials/admin-foot') %>

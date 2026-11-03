@@ -12,12 +12,19 @@ app.set('trust proxy', 1);                       // chạy sau proxy của Rende
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
+sprint3/chung
 app.use(require('./middlewares/security'));
+
+develop
 app.use(express.urlencoded({ extended: true, limit: '200kb' }));
 app.use(express.static(path.join(__dirname, 'public'), { maxAge: '1h' }));
 app.use(cookieSession({
   name: 'dm_sess',
   keys: [process.env.SESSION_SECRET || 'dev-secret-doi-khi-chay-that'],
+sprint3/chung
+
+  maxAge: 7 * 24 * 3600 * 1000,
+ develop
   httpOnly: true, sameSite: 'lax',
   secure: process.env.NODE_ENV === 'production'
 }));

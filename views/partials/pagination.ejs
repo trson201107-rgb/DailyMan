@@ -1,0 +1,9 @@
+<% if (meta.totalPages > 1) { %>
+<nav class="pager">
+  <% if (meta.page > 1) { %><a href="<%= urlWith({ page: meta.page - 1 }) %>">‹</a><% } else { %><span class="off">‹</span><% } %>
+  <% for (var i = 1; i <= meta.totalPages; i++) { %>
+    <% if (i === meta.page) { %><span class="cur"><%= i %></span><% } else if (i === 1 || i === meta.totalPages || Math.abs(i - meta.page) <= 2) { %><a href="<%= urlWith({ page: i }) %>"><%= i %></a><% } else if (Math.abs(i - meta.page) === 3) { %><span class="off">…</span><% } %>
+  <% } %>
+  <% if (meta.page < meta.totalPages) { %><a href="<%= urlWith({ page: meta.page + 1 }) %>">›</a><% } else { %><span class="off">›</span><% } %>
+</nav>
+<% } %>

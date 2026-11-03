@@ -1,0 +1,35 @@
+<%- include('../partials/head') %>
+<h1 class="mt">Thanh toán</h1>
+<% if (errors.length) { %><div class="errors"><ul><% errors.forEach(function (e) { %><li><%= e %></li><% }) %></ul></div><% } %>
+<form method="post" action="/dat-hang" data-once class="cols">
+  <input type="hidden" name="token" value="<%= token %>">
+  <div>
+    <div class="card">
+      <h3>Thông tin nhận hàng</h3>
+      <label>Họ tên người nhận</label><input name="ten" value="<%= form.ten %>" required>
+      <label>Số điện thoại</label><input name="sdt" value="<%= form.sdt %>" required inputmode="tel">
+      <label>Địa chỉ giao hàng</label><input name="diaChi" value="<%= form.diaChi %>" placeholder="Số nhà, đường, phường/xã, quận/huyện, tỉnh/thành" required>
+      <label>Ghi chú (không bắt buộc)</label><textarea name="ghiChu" rows="2"><%= form.ghiChu %></textarea>
+    </div>
+    <div class="card mt">
+      <h3>Phương thức thanh toán</h3>
+      <% methods.forEach(function (m) { %>
+        <label class="pay-opt"><input type="radio" name="maPT" value="<%= m.MaPT %>" <%= form.maPT === m.MaPT ? 'checked' : '' %>>
+          <span><%= m.TenPT === 'COD' ? 'Thanh toán khi nhận hàng (COD)' : 'Chuyển khoản ngân hàng (QR)' %><br><span class="muted small"><%= m.TenPT === 'COD' ? 'Trả tiền mặt cho nhân viên giao hàng.' : 'Chuyển khoản theo thông tin ở trang đơn hàng sau khi đặt.' %></span></span></label>
+      <% }) %>
+    </div>
+  </div>
+  <aside class="card">
+    <h3>Đơn hàng của bạn</h3>
+    <% lines.forEach(function (l) { %><div class="sum-row"><span><%= l.TenSP %><br><span class="muted small"><%= l.TenMau %> / <%= l.TenSize %> × <%= l.SoLuong %></span></span><span><%= h.money(l.ThanhTien) %></span></div><% }) %>
+    <hr style="border:0;border-top:1px solid var(--line)">
+    <div class="sum-row"><span>Tạm tính</span><span><%= h.money(tienHang) %></span></div>
+    <div class="sum-row"><span>Giảm giá<%= voucher ? ' (' + voucher.MaCode + ')' : '' %></span><span>-<%= h.money(giam) %></span></div>
+    <div class="sum-row"><span>Phí vận chuyển</span><span><%= phi ? h.money(phi) : 'Miễn phí' %></span></div>
+    <div class="sum-row total"><span>Tổng cộng</span><span><%= h.money(tong) %></span></div>
+    <button class="btn camel block mt" type="submit">Đặt hàng</button>
+    <p class="small muted center">Thiếu hàng hoặc giá thay đổi thì đơn sẽ không được tạo.</p>
+    <p class="center small"><a href="/gio-hang">← Quay lại giỏ hàng</a></p>
+  </aside>
+</form>
+<%- include('../partials/foot') %>
