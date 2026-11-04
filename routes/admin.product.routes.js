@@ -1,12 +1,14 @@
-// [BACKEND A] Route quản trị sản phẩm / danh mục (Staff xem + chỉnh tồn kho; Admin được thêm/sửa/ẩn/xóa)
+// [BACKEND A] Route quản trị sản phẩm / danh mục (Staff xem + chỉnh tồn kho + xuất CSV; Admin được thêm/sửa/ẩn/xóa/quản lý ảnh)
 const router = require('express').Router();
 const p = require('../controllers/adminProductController');
 const c = require('../controllers/adminCategoryController');
 const { requireStaff, requireAdmin } = require('../middlewares/auth');
+const uploadImage = require('../middlewares/upload')('anh');
 const { wrap } = require('../utils/errors');
 
 router.use(requireStaff);
 router.get('/san-pham', wrap(p.list));
+router.get('/san-pham/xuat', wrap(p.exportCsv));                  // phải đặt trước /san-pham/:id
 router.get('/san-pham/them', requireAdmin, wrap(p.newForm));
 router.post('/san-pham', requireAdmin, wrap(p.create));
 router.get('/san-pham/:id', wrap(p.detail));
@@ -16,7 +18,10 @@ router.post('/san-pham/:id/an', requireAdmin, wrap(p.hide));
 router.post('/san-pham/:id/hien', requireAdmin, wrap(p.show));
 router.post('/san-pham/:id/xoa', requireAdmin, wrap(p.remove));
 router.post('/san-pham/:id/bien-the', requireAdmin, wrap(p.addVariant));
-router.post('/bien-the/:id/ton-kho', wrap(p.setStock));          // Staff + Admin
+router.post('/san-pham/:id/anh', requireAdmin, uploadImage, wrap(p.addImage));
+router.post('/san-pham/:id/anh/:anh/xoa', requireAdmin, wrap(p.removeImage));
+router.post('/san-pham/:id/anh/:anh/chinh', requireAdmin, wrap(p.mainImage));
+router.post('/bien-the/:id/ton-kho', wrap(p.setStock));          // Staff + Admin: nhập hàng, kiểm kê, điều chỉnh
 router.post('/bien-the/:id/xoa', requireAdmin, wrap(p.removeVariant));
 
 router.get('/danh-muc', requireAdmin, wrap(c.list));

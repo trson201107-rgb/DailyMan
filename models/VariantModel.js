@@ -25,6 +25,33 @@ module.exports = {
       throw e;
     }
   },
+  /**
+   * Thao tác tồn kho (Staff + Admin), mọi thao tác đều ghi lịch sử:
+   *  nhap = nhập hàng (+so) · kiemke = kiểm kê (đặt tồn = so) · dieuchinh = điều chỉnh (đặt tồn = so)
+   */
+  async adjust(maBT, { loai, so, ghiChu }, userId) {
+    return db.transaction(async (tx) => {
+      const cur = (await tx.query('SELECT SoLuongTon FROM BIEN_THE WITH (UPDLOCK) WHERE MaBT = @maBT', { maBT }))[0];
+      if (!cur) throw new AppError('Không tìm thấy biến thể.', 404);
+      let moi; let nhan;
+      if (loai === 'nhap') {
+        if (!Number.isInteger(so) || so < 1) throw new AppError('Số lượng nhập phải là số nguyên >= 1.');
+        moi = cur.SoLuongTon + so; nhan = 'Nhập hàng';
+      } else {
+        if (!Number.isInteger(so) || so < 0) throw new AppError('Số lượng tồn phải là số nguyên >= 0.');
+        moi = so; nhan = loai === 'kiemke' ? 'Kiểm kê' : 'Điều chỉnh';
+      }
+      await tx.run('UPDATE BIEN_THE SET SoLuongTon = @moi WHERE MaBT = @maBT', { moi, maBT });
+      await tx.run(`INSERT INTO LS_TON_KHO (MaBT, LoaiThaoTac, SoLuongThayDoi, TonSau, GhiChu, MaNguoiThucHien) VALUES (@maBT, @nhan, @delta, @moi, @ghiChu, @userId)`,
+        { maBT, nhan, delta: moi - cur.SoLuongTon, moi, ghiChu: ghiChu || null, userId });
+      return { cu: cur.SoLuongTon, moi, nhan };
+    });
+  },
+  history(maSP, limit = 15) {
+    return db.query(`SELECT TOP (@lim) l.LoaiThaoTac, l.SoLuongThayDoi, l.TonSau, l.GhiChu, l.ThoiGian, bt.SKU, tk.HoTen
+                     FROM LS_TON_KHO l JOIN BIEN_THE bt ON bt.MaBT = l.MaBT LEFT JOIN TAI_KHOAN tk ON tk.MaTK = l.MaNguoiThucHien
+                     WHERE bt.MaSP = @maSP ORDER BY l.ThoiGian DESC, l.MaLSTK DESC`, { maSP, lim: limit });
+  },
   /** Điều chỉnh tồn kho (Staff + Admin). Trả về số cũ để ghi log */
   async setStock(maBT, ton) {
     const old = (await db.query('SELECT SoLuongTon FROM BIEN_THE WHERE MaBT=@maBT', { maBT }))[0];

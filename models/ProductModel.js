@@ -10,8 +10,10 @@ const BASE = `
   JOIN DANH_MUC dm ON dm.MaDM = sp.MaDM
   LEFT JOIN (SELECT MaSP, SUM(SoLuongTon) AS TongTon, COUNT(*) AS SoBienThe FROM BIEN_THE GROUP BY MaSP) t ON t.MaSP = sp.MaSP`;
 const COLS = `
-  sp.MaSP, sp.TenSP, sp.MoTa, sp.GiaBan, sp.AnhDaiDien, sp.TrangThai, sp.NgayTao, sp.NgayCapNhat, sp.LuotXem, sp.MaDM, dm.TenDM,
+  sp.MaSP, sp.TenSP, sp.MoTa, sp.GiaBan, sp.GiaGoc, sp.AnhDaiDien, sp.TrangThai, sp.NgayTao, sp.NgayCapNhat, sp.LuotXem, sp.MaDM, dm.TenDM,
   ISNULL(t.TongTon, 0) AS TongTon, ISNULL(t.SoBienThe, 0) AS SoBienThe,
+  CASE WHEN sp.GiaGoc IS NOT NULL AND sp.GiaGoc > sp.GiaBan THEN CAST(ROUND((sp.GiaGoc - sp.GiaBan) * 100.0 / sp.GiaGoc, 0) AS INT) ELSE 0 END AS PhanTramGiam,
+  (SELECT TOP 1 a.MaAnh FROM ANH_SAN_PHAM a WHERE a.MaSP = sp.MaSP ORDER BY a.ThuTu, a.MaAnh) AS MaAnhDau,
   CASE WHEN sp.LuotXem >= ${C.HOT_MIN_VIEWS} THEN 1 ELSE 0 END AS LaHot,
   CASE WHEN sp.NgayTao >= DATEADD(DAY, -${C.NEW_DAYS}, SYSDATETIME()) THEN 1 ELSE 0 END AS LaMoi`;
 
@@ -37,6 +39,10 @@ function buildWhere(f, admin) {
   if (f.dm) { w.push('sp.MaDM = @dm'); p.dm = f.dm; }
   if (f.giaMin != null) { w.push('sp.GiaBan >= @giaMin'); p.giaMin = f.giaMin; }
   if (f.giaMax != null) { w.push('sp.GiaBan <= @giaMax'); p.giaMax = f.giaMax; }
+  // Khoảng giá nhanh: "Dưới 500.000đ" là NHỎ HƠN 500.000 (không tính đúng 500.000)
+  if (f.gia === 'duoi500') w.push('sp.GiaBan < 500000');
+  if (f.gia === '500-1000') w.push('sp.GiaBan >= 500000 AND sp.GiaBan <= 1000000');
+  if (f.gia === 'tren1000') w.push('sp.GiaBan > 1000000');
   if (f.mau || f.size || f.conHang) {   // màu + size + còn hàng phải khớp CÙNG một biến thể
     let c = 'EXISTS (SELECT 1 FROM BIEN_THE b WHERE b.MaSP = sp.MaSP';
     if (f.mau) { c += ' AND b.MaMau = @mau'; p.mau = f.mau; }
@@ -93,16 +99,18 @@ module.exports = {
     return db.query(`SELECT dg.SoSao, dg.NoiDung, dg.NgayDG, tk.HoTen FROM DANH_GIA dg JOIN TAI_KHOAN tk ON tk.MaTK = dg.MaTK
                      WHERE dg.MaSP = @maSP ORDER BY dg.NgayDG DESC`, { maSP });
   },
+  /** Toàn bộ danh sách theo bộ lọc quản trị (không phân trang) để xuất CSV */
+  async exportAll(f) { return (await search(f, { offset: 0, size: 100000 }, true)).items; },
   incView(id) { return db.run('UPDATE SAN_PHAM SET LuotXem = LuotXem + 1 WHERE MaSP = @id', { id }); },
 
   /** Thêm sản phẩm + các biến thể trong MỘT giao dịch */
   async create(p, variants, userId) {
     return db.transaction(async (tx) => {
       const r = await tx.query(
-        `INSERT INTO SAN_PHAM (TenSP, MoTa, GiaBan, AnhDaiDien, TrangThai, MaDM, NguoiTao, NguoiCapNhat, NgayCapNhat)
+        `INSERT INTO SAN_PHAM (TenSP, MoTa, GiaBan, GiaGoc, AnhDaiDien, TrangThai, MaDM, NguoiTao, NguoiCapNhat, NgayCapNhat)
          OUTPUT INSERTED.MaSP
-         VALUES (@ten, @moTa, @gia, @anh, @tt, @maDM, @uid, @uid, SYSDATETIME())`,
-        { ten: p.ten, moTa: p.moTa, gia: p.gia, anh: p.anh, tt: p.trangThai, maDM: p.maDM, uid: userId });
+         VALUES (@ten, @moTa, @gia, @giaGoc, @anh, @tt, @maDM, @uid, @uid, SYSDATETIME())`,
+        { ten: p.ten, moTa: p.moTa, gia: p.gia, giaGoc: p.giaGoc, anh: p.anh, tt: p.trangThai, maDM: p.maDM, uid: userId });
       const maSP = r[0].MaSP;
       for (const v of variants) {
         const sku = v.sku || `SP${maSP}-M${v.maMau}-S${v.maSize}`;
@@ -123,9 +131,9 @@ module.exports = {
     const old = (await db.query('SELECT GiaBan FROM SAN_PHAM WHERE MaSP=@id', { id }))[0];
     if (!old) throw new AppError('Không tìm thấy sản phẩm.', 404);
     await db.run(
-      `UPDATE SAN_PHAM SET TenSP=@ten, MoTa=@moTa, GiaBan=@gia, AnhDaiDien=@anh, MaDM=@maDM,
+      `UPDATE SAN_PHAM SET TenSP=@ten, MoTa=@moTa, GiaBan=@gia, GiaGoc=@giaGoc, AnhDaiDien=@anh, MaDM=@maDM,
               NgayCapNhat=SYSDATETIME(), NguoiCapNhat=@uid WHERE MaSP=@id`,
-      { id, ten: p.ten, moTa: p.moTa, gia: p.gia, anh: p.anh, maDM: p.maDM, uid: userId });
+      { id, ten: p.ten, moTa: p.moTa, gia: p.gia, giaGoc: p.giaGoc, anh: p.anh, maDM: p.maDM, uid: userId });
     return old.GiaBan;
   },
 
