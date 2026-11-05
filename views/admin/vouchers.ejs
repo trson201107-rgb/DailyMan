@@ -1,0 +1,27 @@
+<%- include('../partials/admin-head') %>
+<div class="row mb"><h1 style="margin:0">Khuyến mãi &amp; voucher</h1><span class="spacer"></span><a class="btn camel" href="/admin/voucher/them">+ Thêm voucher</a></div>
+<form method="get" class="toolbar">
+  <div><label>Mã voucher</label><input name="q" value="<%= f.q %>"></div>
+  <div><label>Tình trạng</label><select name="tt"><option value="">Tất cả</option><% ['Đang chạy', 'Chưa bắt đầu', 'Hết hạn', 'Hết lượt'].forEach(function (t) { %><option <%= f.tinhTrang === t ? 'selected' : '' %>><%= t %></option><% }) %></select></div>
+  <button class="btn">Lọc</button><a class="btn ghost" href="/admin/voucher">Xóa lọc</a>
+</form>
+<% if (!items.length) { %><div class="empty">Chưa có voucher nào.</div><% } else { %>
+<div class="scroll"><table><thead><tr><th>Mã</th><th>Giảm</th><th>Đơn tối thiểu</th><th>Hiệu lực</th><th>Lượt còn</th><th>Đã dùng / trong ví</th><th>Tình trạng</th><th>Thao tác</th></tr></thead><tbody>
+  <% items.forEach(function (v) { %><tr>
+    <td><strong><%= v.MaCode %></strong></td>
+    <td><%= v.LoaiGiam === 'PHAN_TRAM' ? v.GiaTriGiam + '%' : h.money(v.GiaTriGiam) %></td><td><%= h.money(v.DonToiThieu) %></td>
+    <td class="small"><%= h.fmtDate(v.NgayBatDau, false) %> → <%= h.fmtDate(v.NgayHetHan, false) %></td><td><%= v.SoLuotConLai %></td><td><%= v.DaDung %> / <%= v.TrongVi %></td>
+    <td><span class="badge <%= v.TinhTrang === 'Đang chạy' ? 'ok' : v.TinhTrang === 'Chưa bắt đầu' ? 'new' : 'out' %>"><%= v.TinhTrang %></span></td>
+    <td><div class="actions">
+      <a class="btn sm ghost" href="/admin/voucher/<%= v.MaVoucher %>/sua">Sửa</a>
+      <% if (v.TinhTrang === 'Đang chạy') { %><form method="post" action="/admin/voucher/<%= v.MaVoucher %>/ket-thuc" data-confirm="Kết thúc voucher <%= v.MaCode %>?"><button class="btn sm ghost">Kết thúc</button></form><% } %>
+      <form method="post" action="/admin/voucher/<%= v.MaVoucher %>/xoa" data-confirm="Xóa voucher <%= v.MaCode %>?"><button class="btn sm ghost">Xóa</button></form></div>
+      <details style="margin-top:6px"><summary class="small" style="cursor:pointer;color:var(--camel)">Phát vào ví khách</summary>
+        <form method="post" action="/admin/voucher/<%= v.MaVoucher %>/phat" class="stock-form" style="margin-top:6px">
+          <select name="doiTuong"><option value="all">Tất cả khách</option><option value="hang">Theo hạng</option><option value="email">Một khách (email)</option></select>
+          <select name="maHang"><% tiers.forEach(function (t) { %><option value="<%= t.MaHang %>"><%= t.TenHang %></option><% }) %></select>
+          <input name="email" type="email" placeholder="Email khách" style="width:170px"><button class="btn sm">Phát</button></form></details></td></tr><% }) %>
+</tbody></table></div>
+<%- include('../partials/pagination') %>
+<% } %>
+<%- include('../partials/admin-foot') %>

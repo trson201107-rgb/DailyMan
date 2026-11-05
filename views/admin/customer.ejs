@@ -1,0 +1,18 @@
+<%- include('../partials/admin-head') %>
+<p><a href="/admin/tai-khoan">← Danh sách tài khoản</a></p>
+<div class="row mb"><h1 style="margin:0"><%= u.HoTen %></h1>
+  <span class="badge <%= u.TrangThai === 'Bị khóa' ? 'out' : 'ok' %>"><%= u.TrangThai %></span><span class="badge"><%= u.TenVaiTro %></span></div>
+<div class="grid2">
+  <div class="card"><h3>Thông tin</h3>
+    <p>Email: <strong><%= u.Email %></strong><br>Điện thoại: <strong><%= u.SoDienThoai %></strong><br>Tham gia: <strong><%= h.fmtDate(u.NgayTao, false) %></strong></p></div>
+  <div class="card"><h3>Hạng thành viên</h3>
+    <% if (u.TenVaiTro === 'Customer') { %>
+    <p>Hạng hiện tại: <strong><%= u.TenHang || '—' %></strong><br>Tổng chi tiêu (đơn Hoàn thành): <strong><%= h.money(sp.tong) %></strong><br>Số đơn hàng: <strong><%= soDon %></strong></p>
+    <% } else { %><p class="muted">Tài khoản nhân viên / quản trị không có hạng thành viên.</p><% } %></div>
+</div>
+<h2 class="mt">Lịch sử đơn hàng</h2>
+<% if (!orders.length) { %><p class="muted">Khách chưa có đơn hàng nào.</p><% } else { %>
+<div class="scroll"><table><thead><tr><th>Mã</th><th>Đặt lúc</th><th>Sản phẩm</th><th>Tổng tiền</th><th>Trạng thái</th></tr></thead><tbody>
+  <% orders.forEach(function (o) { %><tr><td><a href="/admin/don-hang/<%= o.MaDH %>">#<%= o.MaDH %></a></td><td class="small"><%= h.fmtDate(o.NgayDat) %></td><td><%= o.SoSanPham %> sp</td><td><%= h.money(o.TongThanhToan) %></td><td><span class="badge st-<%= o.MaTrangThai %>"><%= o.TenTrangThai %></span></td></tr><% }) %>
+</tbody></table></div><% } %>
+<%- include('../partials/admin-foot') %>

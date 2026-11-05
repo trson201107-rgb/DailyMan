@@ -1,18 +1,30 @@
 <%- include('../partials/head') %>
-<h1 class="mt">Giỏ hàng <span class="muted small">(<%= lines.length %> sản phẩm)</span></h1>
+<%- include('../partials/stepper') %>
+<h1 class="mt">Giỏ hàng <span class="muted small">(<%= lines.length %> sản phẩm, đã chọn <%= chosen.length %>)</span></h1>
 <% if (!lines.length) { %>
   <div class="empty"><h3>Giỏ hàng của bạn đang trống</h3><a class="btn" href="/san-pham">Tiếp tục mua sắm</a></div>
 <% } else { %>
 <% if (!user) { %><div class="flash info">Bạn đang dùng giỏ hàng tạm. <a href="/dang-nhap"><u>Đăng nhập</u></a> để đặt hàng và dùng mã giảm giá — giỏ hàng sẽ được giữ nguyên.</div><% } %>
+<% if (coGiaDoi) { %>
+  <div class="panel warn" style="margin:0 0 14px">
+    <strong>Giá của một số sản phẩm đã thay đổi</strong> kể từ lúc bạn thêm vào giỏ. Giá mới đã được cập nhật bên dưới, vui lòng xem lại rồi xác nhận để tiếp tục thanh toán.
+    <form method="post" action="/gio-hang/chap-nhan-gia" style="margin-top:8px"><button class="btn sm camel" type="submit">Đồng ý với giá mới</button></form>
+  </div>
+<% } %>
+<form id="chon-form" method="post" action="/gio-hang/chon"></form>
 <div class="cols">
-  <div class="scroll"><table>
-    <thead><tr><th>Sản phẩm</th><th>Đơn giá</th><th>Số lượng</th><th>Thành tiền</th><th></th></tr></thead>
+  <div class="scroll">
+    <label class="selall"><input type="checkbox" form="chon-form" data-selall="dong" data-submit="1" <%= chosen.length === lines.length ? 'checked' : '' %>> Chọn tất cả</label>
+    <table>
+    <thead><tr><th></th><th>Sản phẩm</th><th>Đơn giá</th><th>Số lượng</th><th>Thành tiền</th><th></th></tr></thead>
     <tbody>
     <% lines.forEach(function (l) { %>
       <tr>
+        <td><input type="checkbox" form="chon-form" name="maBT" value="<%= l.MaBT %>" data-sel="dong" data-autosubmit-check <%= l.Chon ? 'checked' : '' %> aria-label="Chọn <%= l.TenSP %>"></td>
         <td><div class="cell"><div class="tbl-thumb"><%- include('../partials/thumb', { p: l }) %></div>
           <div><a href="/san-pham/<%= l.MaSP %>"><strong><%= l.TenSP %></strong></a><br><span class="muted small"><%= l.TenMau %> / <%= l.TenSize %> · <%= l.SKU %></span>
-          <% if (l.HetHang) { %><br><span class="badge out">Hết hàng / ngừng bán — không tính vào tổng</span><% } else if (l.VuotTon) { %><br><span class="badge low">Chỉ còn <%= l.Ton %> sản phẩm</span><% } %></div></div></td>
+          <% if (l.HetHang) { %><br><span class="badge out">Hết hàng / ngừng bán — không tính vào tổng</span><% } else if (l.VuotTon) { %><br><span class="badge low">Chỉ còn <%= l.Ton %> sản phẩm</span><% } %>
+          <% if (l.GiaDoi) { %><div class="cart-price-alert">⚠ Giá đã đổi: <%= h.money(l.GiaLucThem) %> → <strong><%= h.money(l.GiaBan) %></strong></div><% } %></div></div></td>
         <td><%= h.money(l.GiaBan) %></td>
         <td><form method="post" action="/gio-hang/cap-nhat"><input type="hidden" name="maBT" value="<%= l.MaBT %>">
           <div class="qty" data-submit="1"><button type="button" data-d="-1">−</button><input type="number" name="soLuong" value="<%= l.SoLuong %>" min="1" max="<%= Math.max(l.Ton, 1) %>"><button type="button" data-d="1">+</button></div></form></td>
@@ -36,11 +48,13 @@
         <% }) %></div><% } %>
     <% } %>
     <h3 class="mt">Tóm tắt đơn hàng</h3>
-    <div class="sum-row"><span>Tạm tính</span><span><%= h.money(tienHang) %></span></div>
-    <div class="sum-row"><span>Giảm giá</span><span>-<%= h.money(giam) %></span></div>
+    <div class="sum-row"><span>Tạm tính (<%= chosen.length %> sản phẩm đã chọn)</span><span><%= h.money(tienHang) %></span></div>
+    <% if (giamHang > 0) { %><div class="sum-row"><span>Ưu đãi hạng <%= hang.ten %> (<%= hang.pct %>%)</span><span>-<%= h.money(giamHang) %></span></div><% } %>
+    <div class="sum-row"><span>Giảm giá<%= voucher ? ' (' + voucher.MaCode + ')' : '' %></span><span>-<%= h.money(giamVoucher) %></span></div>
     <div class="sum-row"><span>Phí vận chuyển</span><span><%= phi ? h.money(phi) : 'Miễn phí' %></span></div>
     <div class="sum-row total"><span>Tổng cộng</span><span><%= h.money(tong) %></span></div>
-    <a class="btn camel block mt" href="/thanh-toan">Tiến hành thanh toán</a>
+    <% if (chosen.length) { %><a class="btn camel block mt" href="/thanh-toan">Tiến hành thanh toán</a>
+    <% } else { %><button class="btn block mt" disabled>Hãy chọn sản phẩm để thanh toán</button><% } %>
   </aside>
 </div>
 <% } %>

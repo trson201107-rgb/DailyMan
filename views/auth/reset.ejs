@@ -1,0 +1,17 @@
+<%- include('../partials/head') %>
+<div class="auth card">
+  <h2>Đặt lại mật khẩu</h2>
+  <% if (invalid) { %>
+    <div class="panel bad" style="margin-top:0"><strong>Liên kết không còn hiệu lực.</strong><p style="margin:6px 0 0">Liên kết đã hết hạn hoặc đã được sử dụng. Vui lòng yêu cầu gửi lại.</p></div>
+    <a class="btn block mt" href="/quen-mat-khau">Gửi lại liên kết</a>
+  <% } else { %>
+    <p class="muted">Đặt mật khẩu mới cho tài khoản <strong><%= email %></strong>.</p>
+    <% if (errors.length) { %><div class="errors"><ul><% errors.forEach(function (e) { %><li><%= e %></li><% }) %></ul></div><% } %>
+    <form method="post" data-once>
+      <label>Mật khẩu mới (tối thiểu 6 ký tự)</label><input type="password" name="matKhauMoi" required minlength="6" data-toggle-pw autocomplete="new-password" autofocus>
+      <label>Nhập lại mật khẩu mới</label><input type="password" name="matKhauMoi2" required minlength="6" data-toggle-pw autocomplete="new-password">
+      <button class="btn block mt" type="submit">Đổi mật khẩu</button>
+    </form>
+  <% } %>
+</div>
+<%- include('../partials/foot') %>

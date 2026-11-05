@@ -1,5 +1,7 @@
 <%- include('../partials/admin-head') %>
 <div class="row mb"><h1 style="margin:0">Quản lý sản phẩm</h1><span class="spacer"></span>
+  <% var xs = new URLSearchParams(); ['q','dm','trangThai','sort'].forEach(function (k) { if (f[k]) xs.set(k, f[k]); }); %>
+  <a class="btn ghost" href="/admin/san-pham/xuat<%= xs.toString() ? '?' + xs.toString() : '' %>">⬇ Xuất CSV</a>
   <% if (user.role === 'Admin') { %><a class="btn camel" href="/admin/san-pham/them">+ Thêm sản phẩm</a><% } %></div>
 <div class="stats">
   <div class="stat"><div class="v"><%= counts.Tong %></div><div class="l">Tổng sản phẩm</div></div>
@@ -20,7 +22,7 @@
   <tbody><% items.forEach(function (p) { %>
     <tr>
       <td><div class="cell"><div class="tbl-thumb"><%- include('../partials/thumb', { p: p }) %></div><div><a href="/admin/san-pham/<%= p.MaSP %>"><strong><%= p.TenSP %></strong></a><br><span class="muted small">#<%= p.MaSP %> · <%= p.SoBienThe %> biến thể · <%= p.LuotXem %> lượt xem</span></div></div></td>
-      <td><%= p.TenDM %></td><td><%= h.money(p.GiaBan) %></td>
+      <td><%= p.TenDM %></td><td><%= h.money(p.GiaBan) %><% if (p.PhanTramGiam > 0) { %><br><span class="old-price" style="margin:0"><%= h.money(p.GiaGoc) %></span> <span class="badge sale">-<%= p.PhanTramGiam %>%</span><% } %></td>
       <td><strong><%= p.TongTon %></strong> <% if (p.TongTon === 0) { %><span class="badge out">Hết hàng</span><% } else if (p.TongTon <= 10) { %><span class="badge low">Sắp hết</span><% } %></td>
       <td><% if (p.TrangThai === 'Đang bán') { %><span class="badge ok">Đang bán</span><% } else { %><span class="badge hidden">Đã ẩn</span><% } %></td>
       <td class="small muted"><%= h.fmtDate(p.NgayCapNhat || p.NgayTao) %></td>

@@ -1,7 +1,9 @@
 <%- include('../partials/admin-head') %>
+<% var voucherGiam = Math.max(0, o.TienGiam - (o.UuDaiHang || 0)); %>
 <p><a href="/admin/don-hang">← Danh sách đơn</a></p>
 <div class="row mb"><h1 style="margin:0">Đơn hàng #<%= o.MaDH %></h1><span class="badge st-<%= o.MaTrangThai %>"><%= o.TenTrangThai %></span><span class="spacer"></span>
-  <% if (o.MaTrangThai < S.HOAN_THANH) { %><form method="post" action="/admin/don-hang/<%= o.MaDH %>/trang-thai"><button class="btn camel">Chuyển → <%= ['', 'Đã xác nhận', 'Đang đóng gói', 'Đang giao', 'Hoàn thành'][o.MaTrangThai] %></button></form><% } %></div>
+  <% if (o.MaTrangThai < S.HOAN_THANH) { %><form method="post" action="/admin/don-hang/<%= o.MaDH %>/trang-thai"><button class="btn camel">Chuyển → <%= STATUS_NAME[o.MaTrangThai + 1] %></button></form><% } %></div>
+<% if (o.doiTra) { %><div class="panel <%= o.doiTra.TrangThai === 'Chờ xử lý' ? 'warn' : o.doiTra.TrangThai === 'Đã chấp nhận' ? 'ok' : 'bad' %>" style="margin-top:0"><strong>Yêu cầu đổi trả #<%= o.doiTra.MaYC %>: <%= o.doiTra.TrangThai %></strong> — <%= o.doiTra.LyDo %><% if (o.doiTra.LyDoTuChoi) { %><br><span class="small">Lý do từ chối: <%= o.doiTra.LyDoTuChoi %></span><% } %> <a href="/admin/doi-tra">Xử lý đổi trả →</a></div><% } %>
 <div class="cols">
   <div>
     <div class="scroll"><table><thead><tr><th>Sản phẩm</th><th>SKU</th><th>Đơn giá</th><th>SL</th><th>Thành tiền</th></tr></thead><tbody>
@@ -9,10 +11,11 @@
     <div class="card mt"><h3>Nhật ký trạng thái</h3><ul class="timeline"><% o.history.forEach(function (x) { %><li><strong><%= x.TenTrangThai %></strong> <span class="muted small">· <%= h.fmtDate(x.ThoiGian) %> · <%= x.NguoiDoi || 'Hệ thống / khách' %></span><br><span class="muted small"><%= x.GhiChu %></span></li><% }) %></ul></div>
   </div>
   <aside>
-    <div class="card"><h3>Khách hàng</h3><p><strong><%= o.HoTen %></strong><br><%= o.Email %><br><%= o.SoDienThoai %></p>
+    <div class="card"><h3>Khách hàng</h3><p><a href="/admin/tai-khoan/<%= o.MaTK %>"><strong><%= o.HoTen %></strong></a><br><%= o.Email %><br><%= o.SoDienThoai %></p>
       <h3>Giao đến</h3><p><strong><%= o.TenNguoiNhan %></strong> · <%= o.SDTNguoiNhan %><br><%= o.DiaChiGiao %><% if (o.GhiChu) { %><br><span class="muted small">Ghi chú: <%= o.GhiChu %></span><% } %></p>
       <div class="sum-row"><span>Tạm tính</span><span><%= h.money(o.TienHang) %></span></div>
-      <div class="sum-row"><span>Giảm giá<%= o.MaCode ? ' (' + o.MaCode + ')' : '' %></span><span>-<%= h.money(o.TienGiam) %></span></div>
+      <% if (o.UuDaiHang > 0) { %><div class="sum-row"><span>Ưu đãi hạng thành viên</span><span>-<%= h.money(o.UuDaiHang) %></span></div><% } %>
+      <div class="sum-row"><span>Giảm giá<%= o.MaCode ? ' (' + o.MaCode + ')' : '' %></span><span>-<%= h.money(voucherGiam) %></span></div>
       <div class="sum-row"><span>Phí vận chuyển</span><span><%= h.money(o.PhiVanChuyen) %></span></div>
       <div class="sum-row total"><span>Tổng cộng</span><span><%= h.money(o.TongThanhToan) %></span></div>
       <p class="muted small"><%= o.TenPT %> · <%= o.TrangThaiTT %></p></div>

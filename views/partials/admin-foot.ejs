@@ -1,4 +1,11 @@
   </div>
 </div>
+<nav class="bottom-nav" aria-label="Điều hướng quản trị">
+  <% if (user.role === 'Admin') { %><a href="/admin" class="<%= path === '/admin' ? 'on' : '' %>"><b>📊</b>Tổng quan</a><% } else { %><a href="/admin/doi-tra" class="<%= path.indexOf('/admin/doi-tra') === 0 ? 'on' : '' %>"><b>🔁</b>Đổi trả</a><% } %>
+  <a href="/admin/don-hang" class="<%= path.indexOf('/admin/don-hang') === 0 ? 'on' : '' %>"><b>📦</b>Đơn hàng</a>
+  <a href="/admin/san-pham" class="<%= path.indexOf('/admin/san-pham') === 0 ? 'on' : '' %>"><b>👕</b>Sản phẩm</a>
+  <button type="button" id="menu-toggle"><b>☰</b>Menu</button>
+</nav>
+<script>document.body.classList.add('has-bottom');</script>
 <script src="/js/main.js"></script>
 </body></html>

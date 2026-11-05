@@ -1,0 +1,21 @@
+<%- include('../partials/head') %>
+<div class="auth card" style="max-width:560px">
+  <h2><%= mode === 'new' ? 'Thêm địa chỉ' : 'Sửa địa chỉ' %></h2>
+  <% if (errors.length) { %><div class="errors"><ul><% errors.forEach(function (e) { %><li><%= e %></li><% }) %></ul></div><% } %>
+  <form method="post" action="<%= mode === 'new' ? '/tai-khoan/dia-chi' : '/tai-khoan/dia-chi/' + id %>" data-once>
+    <input type="hidden" name="next" value="<%= next %>">
+    <div class="field-row">
+      <div><label>Họ tên người nhận</label><input name="ten" value="<%= form.ten %>" required maxlength="100"></div>
+      <div><label>Số điện thoại</label><input name="sdt" value="<%= form.sdt %>" required inputmode="tel" placeholder="0901234567"></div>
+    </div>
+    <div class="field-row">
+      <div><label>Tỉnh / Thành phố</label><input name="tinh" list="ds-tinh" value="<%= form.tinh %>" required maxlength="50" placeholder="Chọn hoặc nhập">
+        <datalist id="ds-tinh"><% provinces.forEach(function (t) { %><option value="<%= t %>"><% }) %></datalist></div>
+      <div><label>Quận / Huyện</label><input name="quan" value="<%= form.quan %>" required maxlength="50"></div>
+    </div>
+    <label>Địa chỉ cụ thể</label><input name="cuThe" value="<%= form.cuThe %>" required maxlength="150" placeholder="Số nhà, đường, phường/xã">
+    <label class="check"><input type="checkbox" name="macDinh" value="1" <%= form.macDinh ? 'checked' : '' %>> Đặt làm địa chỉ mặc định</label>
+    <div class="row mt"><button class="btn camel" type="submit">Lưu địa chỉ</button><a class="btn ghost" href="<%= next %>">Hủy</a></div>
+  </form>
+</div>
+<%- include('../partials/foot') %>

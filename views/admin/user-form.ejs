@@ -1,0 +1,17 @@
+<%- include('../partials/admin-head') %>
+<p><a href="/admin/tai-khoan">← Danh sách tài khoản</a></p>
+<h1>Thêm tài khoản</h1>
+<% if (errors.length) { %><div class="errors"><ul><% errors.forEach(function (e) { %><li><%= e %></li><% }) %></ul></div><% } %>
+<form method="post" action="/admin/tai-khoan" data-once class="card" style="max-width:560px">
+  <label>Họ tên *</label><input name="hoTen" value="<%= form.hoTen %>" required maxlength="100">
+  <div class="field-row">
+    <div><label>Email *</label><input type="email" name="email" value="<%= form.email %>" required></div>
+    <div><label>Số điện thoại *</label><input name="sdt" value="<%= form.sdt %>" required inputmode="tel" placeholder="0901234567"></div>
+  </div>
+  <div class="field-row">
+    <div><label>Vai trò</label><select name="role"><% roles.forEach(function (r) { %><option <%= form.role === r ? 'selected' : '' %>><%= r %></option><% }) %></select></div>
+    <div><label>Mật khẩu ban đầu (tối thiểu 6 ký tự) *</label><input type="password" name="matKhau" required minlength="6" data-toggle-pw></div>
+  </div>
+  <div class="row mt"><button class="btn camel" type="submit">Tạo tài khoản</button><a class="btn ghost" href="/admin/tai-khoan">Hủy</a></div>
+</form>
+<%- include('../partials/admin-foot') %>

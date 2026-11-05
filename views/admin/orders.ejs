@@ -1,5 +1,7 @@
 <%- include('../partials/admin-head') %>
-<h1>Quản lý đơn hàng</h1>
+<div class="row mb"><h1 style="margin:0">Quản lý đơn hàng</h1><span class="spacer"></span>
+  <% var xs = new URLSearchParams(); ['tt','q','tu','den'].forEach(function (k) { if (f[k] || (k === 'tt' && f.status)) xs.set(k, k === 'tt' ? f.status : f[k]); }); %>
+  <a class="btn ghost" href="/admin/don-hang/xuat<%= xs.toString() ? '?' + xs.toString() : '' %>">⬇ Xuất CSV</a></div>
 <div class="tabs">
   <a class="<%= !f.status ? 'on' : '' %>" href="<%= urlWith({ tt: '', page: '' }) %>">Tất cả (<%= counts.all %>)</a>
   <% statuses.forEach(function (s) { %><a class="<%= f.status === s.MaTrangThai ? 'on' : '' %>" href="<%= urlWith({ tt: s.MaTrangThai, page: '' }) %>"><%= s.TenTrangThai %> (<%= counts[s.MaTrangThai] || 0 %>)</a><% }) %>
@@ -12,8 +14,18 @@
   <button class="btn">Tìm</button><a class="btn ghost" href="/admin/don-hang">Xóa lọc</a>
 </form>
 <% if (!items.length) { %><div class="empty">Không có đơn hàng phù hợp.</div><% } else { %>
-<div class="scroll"><table><thead><tr><th>Mã</th><th>Khách hàng</th><th>Điện thoại</th><th>Đặt lúc</th><th>Thanh toán</th><th>Tổng tiền</th><th>Trạng thái</th><th></th></tr></thead><tbody>
+<form id="bulk-form" method="post" action="/admin/don-hang/hang-loat" data-confirm="Cập nhật trạng thái các đơn đã chọn?">
+  <input type="hidden" name="den" id="bulk-den" value="">
+  <div class="bulkbar"><span class="lbl">Cập nhật nhanh các đơn đã chọn:</span>
+    <button class="btn sm" data-bulk-den="2">→ Xác nhận</button>
+    <button class="btn sm" data-bulk-den="3">→ Đóng gói</button>
+    <button class="btn sm" data-bulk-den="4">→ Giao hàng</button>
+    <button class="btn sm" data-bulk-den="5">→ Hoàn thành</button>
+    <span class="muted small">Đơn không đúng trạng thái liền trước sẽ bị từ chối kèm lý do.</span></div>
+</form>
+<div class="scroll"><table><thead><tr><th><input type="checkbox" form="bulk-form" data-selall="don" aria-label="Chọn tất cả đơn"></th><th>Mã</th><th>Khách hàng</th><th>Điện thoại</th><th>Đặt lúc</th><th>Thanh toán</th><th>Tổng tiền</th><th>Trạng thái</th><th></th></tr></thead><tbody>
   <% items.forEach(function (o) { %><tr>
+    <td><input type="checkbox" form="bulk-form" name="ids" value="<%= o.MaDH %>" data-sel="don" aria-label="Chọn đơn #<%= o.MaDH %>"></td>
     <td><a href="/admin/don-hang/<%= o.MaDH %>"><strong>#<%= o.MaDH %></strong></a></td><td><%= o.TenNguoiNhan %></td><td><%= o.SDTNguoiNhan %></td><td class="small"><%= h.fmtDate(o.NgayDat) %></td>
     <td><%= o.TenPT %><br><span class="muted small"><%= o.TrangThaiTT %></span></td><td><strong><%= h.money(o.TongThanhToan) %></strong></td>
     <td><span class="badge st-<%= o.MaTrangThai %>"><%= o.TenTrangThai %></span></td>

@@ -1,5 +1,6 @@
 <article class="pcard <%= p.TongTon < 1 ? 'soldout' : '' %>">
   <div class="tags">
+    <% if (p.PhanTramGiam > 0) { %><span class="badge sale">-<%= p.PhanTramGiam %>%</span><% } %>
     <% if (p.LaHot) { %><span class="badge hot">Hot</span><% } %><% if (p.LaMoi) { %><span class="badge new">Mới</span><% } %>
     <% if (p.TongTon < 1) { %><span class="badge out">Hết hàng</span><% } %>
   </div>
@@ -7,6 +8,6 @@
   <div class="info">
     <span class="muted small"><%= p.TenDM %></span>
     <a class="name" href="/san-pham/<%= p.MaSP %>"><%= p.TenSP %></a>
-    <span class="price"><%= h.money(p.GiaBan) %></span>
+    <span class="price"><%= h.money(p.GiaBan) %></span><% if (p.PhanTramGiam > 0) { %><span class="old-price"><%= h.money(p.GiaGoc) %></span><% } %>
   </div>
 </article>
