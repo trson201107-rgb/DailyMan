@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title><%= typeof title !== 'undefined' ? title + ' | ' : '' %>dailyman – Thời trang nam thường nhật</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<div class="topbar">Miễn phí vận chuyển cho đơn từ <%= h.money(1000000) %> · Đổi trả trong 7 ngày</div>
+<header class="header"><div class="container">
+  <a class="logo" href="/">daily<b>man</b></a>
+  <nav class="nav">
+    <a href="/" class="<%= path === '/' ? 'active' : '' %>">Trang chủ</a>
+    <a href="/san-pham" class="<%= path.indexOf('/san-pham') === 0 ? 'active' : '' %>">Cửa hàng</a>
+    <a href="/san-pham?tag=hot">Hot</a>
+    <a href="/san-pham?tag=moi">Hàng mới</a>
+  </nav>
+  <form class="search" action="/san-pham" method="get"><input name="q" placeholder="Tìm áo thun, quần jeans..." value="<%= typeof f !== 'undefined' && f && f.q ? f.q : '' %>"><button type="submit">Tìm</button></form>
+  <div class="hdr-right">
+    <% if (user) { %>
+      <div class="menu"><a href="/tai-khoan" tabindex="0">👤 <%= user.name %></a>
+        <div class="drop">
+          <a href="/tai-khoan">Hồ sơ của tôi</a><a href="/don-hang">Đơn hàng của tôi</a>
+          <% if (user.role !== 'Customer') { %><a href="/admin">Trang quản trị</a><% } %>
+          <form method="post" action="/dang-xuat"><button type="submit">Đăng xuất</button></form>
+        </div></div>
+    <% } else { %><a href="/dang-nhap">Đăng nhập</a><a href="/dang-ky" class="btn sm">Đăng ký</a><% } %>
+    <a class="cart-link" href="/gio-hang">🛒<% if (cartCount > 0) { %><span class="n"><%= cartCount %></span><% } %></a>
+  </div>
+</div></header>
+<main class="container">
+<% if (flash) { %><div class="flash <%= flash.type %>"><%= flash.msg %></div><% } %>

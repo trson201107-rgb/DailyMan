@@ -1,0 +1,32 @@
+<%- include('../partials/admin-head') %>
+<p><a href="/admin/san-pham">← Danh sách sản phẩm</a></p>
+<h1><%= mode === 'new' ? 'Thêm sản phẩm' : 'Sửa sản phẩm' %></h1>
+<% if (errors.length) { %><div class="errors"><ul><% errors.forEach(function (e) { %><li><%= e %></li><% }) %></ul></div><% } %>
+<form method="post" action="<%= mode === 'new' ? '/admin/san-pham' : '/admin/san-pham/' + id %>" data-once>
+  <div class="card">
+    <label>Tên sản phẩm *</label><input name="ten" value="<%= form.ten %>" maxlength="150" required>
+    <div class="field-row">
+      <div><label>Giá bán (đ) *</label><input name="gia" inputmode="numeric" value="<%= form.gia %>" required></div>
+      <div><label>Danh mục *</label><select name="maDM" required><option value="">Chọn danh mục</option><% categories.forEach(function (c) { %><option value="<%= c.MaDM %>" <%= String(form.maDM) === String(c.MaDM) ? 'selected' : '' %>><%= c.TenDM %></option><% }) %></select></div>
+    </div>
+    <label>Ảnh đại diện (URL, bỏ trống sẽ dùng ảnh mặc định)</label><input name="anh" value="<%= form.anh %>" placeholder="https://...">
+    <label>Mô tả</label><textarea name="moTa" rows="3" maxlength="1000"><%= form.moTa %></textarea>
+    <% if (mode === 'new') { %>
+    <label>Trạng thái</label><select name="trangThai"><option value="Đang bán" <%= form.trangThai === 'Đang bán' ? 'selected' : '' %>>Đang bán</option><option value="Ngừng bán" <%= form.trangThai === 'Ngừng bán' ? 'selected' : '' %>>Ngừng bán (ẩn)</option></select>
+    <% } else { %><p class="muted small mt">Muốn ẩn / hiện sản phẩm hãy dùng nút Ẩn / Hiện lại ở trang chi tiết.</p><% } %>
+  </div>
+  <% if (mode === 'new') { %>
+  <div class="card mt"><h3>Biến thể ban đầu (màu + size + tồn kho)</h3>
+    <div class="scroll"><table><thead><tr><th>Màu</th><th>Size</th><th>SKU (bỏ trống = tự sinh)</th><th>Tồn kho</th></tr></thead><tbody id="variant-rows">
+      <% rows.forEach(function (r, i) { %><tr>
+        <td><select name="bienthe[<%= i %>][mau]"><option value="">—</option><% colors.forEach(function (c) { %><option value="<%= c.MaMau %>" <%= String(r.mau) === String(c.MaMau) ? 'selected' : '' %>><%= c.TenMau %></option><% }) %></select></td>
+        <td><select name="bienthe[<%= i %>][size]"><option value="">—</option><% sizes.forEach(function (s) { %><option value="<%= s.MaSize %>" <%= String(r.size) === String(s.MaSize) ? 'selected' : '' %>><%= s.TenSize %></option><% }) %></select></td>
+        <td><input name="bienthe[<%= i %>][sku]" maxlength="30" value="<%= r.sku || '' %>"></td>
+        <td><input type="number" min="0" name="bienthe[<%= i %>][ton]" value="<%= r.ton || 0 %>"></td></tr><% }) %>
+    </tbody></table></div>
+    <button type="button" id="add-variant-row" class="btn sm ghost mt">+ Thêm dòng</button>
+  </div>
+  <% } %>
+  <div class="row mt"><button class="btn camel" type="submit">Lưu</button><a class="btn ghost" href="/admin/san-pham">Hủy</a></div>
+</form>
+<%- include('../partials/admin-foot') %>

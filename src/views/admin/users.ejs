@@ -1,0 +1,16 @@
+<%- include('../partials/admin-head') %>
+<h1><%= user.role === 'Admin' ? 'Quản lý tài khoản' : 'Tra cứu khách hàng' %></h1>
+<form method="get" class="toolbar">
+  <div><label>Tìm (tên / email / SĐT)</label><input name="q" value="<%= f.q %>"></div>
+  <div><label>Vai trò</label><select name="role"><option value="">Tất cả</option><% roles.forEach(function (r) { %><option <%= f.role === r ? 'selected' : '' %>><%= r %></option><% }) %></select></div>
+  <button class="btn">Tìm</button>
+</form>
+<div class="scroll"><table><thead><tr><th>Họ tên</th><th>Email</th><th>SĐT</th><th>Vai trò</th><th>Hạng</th><th>Trạng thái</th><% if (user.role === 'Admin') { %><th></th><% } %></tr></thead><tbody>
+  <% items.forEach(function (u) { %><tr><td><strong><%= u.HoTen %></strong><br><span class="muted small">Tham gia <%= h.fmtDate(u.NgayTao, false) %></span></td><td><%= u.Email %></td><td><%= u.SoDienThoai %></td><td><%= u.TenVaiTro %></td><td><%= u.TenHang || '—' %></td>
+    <td><% if (u.TrangThai === 'Bị khóa') { %><span class="badge out">Bị khóa</span><% } else if (u.DangKhoa) { %><span class="badge low">Khóa tạm</span><% } else { %><span class="badge ok">Hoạt động</span><% } %></td>
+    <% if (user.role === 'Admin') { %><td><% if (u.MaTK !== user.id) { %><div class="actions">
+      <form method="post" action="/admin/tai-khoan/<%= u.MaTK %>/vai-tro" class="inline-form"><select name="role" style="width:auto"><% roles.forEach(function (r) { %><option <%= u.TenVaiTro === r ? 'selected' : '' %>><%= r %></option><% }) %></select><button class="btn sm ghost">Đổi</button></form>
+      <form method="post" action="/admin/tai-khoan/<%= u.MaTK %>/khoa"><input type="hidden" name="trangThai" value="<%= u.TrangThai === 'Bị khóa' ? 'Hoạt động' : 'Bị khóa' %>"><button class="btn sm ghost"><%= u.TrangThai === 'Bị khóa' ? 'Mở khóa' : 'Khóa' %></button></form></div><% } else { %><span class="muted small">(bạn)</span><% } %></td><% } %></tr><% }) %>
+</tbody></table></div>
+<%- include('../partials/pagination') %>
+<%- include('../partials/admin-foot') %>

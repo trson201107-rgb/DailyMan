@@ -1,0 +1,22 @@
+<%- include('../partials/head') %>
+<h1 class="mt">Tài khoản của tôi</h1>
+<div class="grid2">
+  <div class="card"><h3>Thông tin cá nhân</h3>
+    <form method="post" action="/tai-khoan">
+      <label>Email</label><input value="<%= u.Email %>" disabled>
+      <label>Họ tên</label><input name="hoTen" value="<%= u.HoTen %>" required>
+      <label>Số điện thoại</label><input name="sdt" value="<%= u.SoDienThoai %>" required>
+      <button class="btn mt" type="submit">Lưu thay đổi</button>
+    </form>
+    <p class="muted small mt">Vai trò: <%= u.TenVaiTro %><% if (u.TenVaiTro === 'Customer') { %> · Hạng thành viên: <strong><%= sp.hang ? sp.hang.TenHang : u.TenHang %></strong> (ưu đãi <%= sp.hang ? sp.hang.PhanTramUuDai : 0 %>%) · Tổng chi tiêu: <%= h.money(sp.tong) %><% } %></p>
+  </div>
+  <div class="card"><h3>Đổi mật khẩu</h3>
+    <form method="post" action="/tai-khoan/mat-khau">
+      <label>Mật khẩu hiện tại</label><input type="password" name="matKhauCu" required>
+      <label>Mật khẩu mới</label><input type="password" name="matKhauMoi" required minlength="6">
+      <label>Nhập lại mật khẩu mới</label><input type="password" name="matKhauMoi2" required minlength="6">
+      <button class="btn mt" type="submit">Đổi mật khẩu</button>
+    </form>
+  </div>
+</div>
+<%- include('../partials/foot') %>

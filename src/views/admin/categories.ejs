@@ -1,0 +1,15 @@
+<%- include('../partials/admin-head') %>
+<h1>Quản lý danh mục</h1>
+<div class="grid2">
+  <div class="scroll"><table><thead><tr><th>Danh mục</th><th>Mô tả</th><th>Số SP</th><th></th></tr></thead><tbody>
+    <% items.forEach(function (c) { %><tr><td><strong><%= c.TenDM %></strong></td><td class="muted small"><%= c.MoTa %></td><td><%= c.SoSanPham %></td>
+      <td><div class="actions"><a class="btn sm ghost" href="/admin/danh-muc?sua=<%= c.MaDM %>">Sửa</a>
+        <form method="post" action="/admin/danh-muc/<%= c.MaDM %>/xoa" data-confirm="Xóa danh mục này?"><button class="btn sm ghost" <%= c.SoSanPham ? 'disabled title="Danh mục đang có sản phẩm"' : '' %>>Xóa</button></form></div></td></tr><% }) %></tbody></table></div>
+  <div class="card"><h3><%= editing ? 'Sửa danh mục' : 'Thêm danh mục' %></h3>
+    <form method="post" action="<%= editing ? '/admin/danh-muc/' + editing.MaDM : '/admin/danh-muc' %>">
+      <label>Tên danh mục</label><input name="ten" required maxlength="50" value="<%= editing ? editing.TenDM : '' %>">
+      <label>Mô tả</label><input name="moTa" maxlength="255" value="<%= editing ? editing.MoTa || '' : '' %>">
+      <div class="row mt"><button class="btn camel"><%= editing ? 'Cập nhật' : 'Thêm' %></button><% if (editing) { %><a class="btn ghost" href="/admin/danh-muc">Hủy</a><% } %></div>
+    </form></div>
+</div>
+<%- include('../partials/admin-foot') %>

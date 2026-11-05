@@ -1,0 +1,51 @@
+<%- include('../partials/head') %>
+<p class="muted small mt"><a href="/">Trang chủ</a> / <a href="/san-pham?dm=<%= p.MaDM %>"><%= p.TenDM %></a> / <%= p.TenSP %></p>
+<div class="detail">
+  <div class="big"><%- include('../partials/thumb', { p: p }) %></div>
+  <div>
+    <div class="row">
+      <% if (p.TongTon < 1) { %><span class="badge out">Hết hàng</span><% } else { %><span class="badge ok">Còn hàng</span><% } %>
+      <% if (p.LaHot) { %><span class="badge hot">Hot</span><% } %><% if (p.LaMoi) { %><span class="badge new">Mới</span><% } %>
+    </div>
+    <h1 style="margin-top:10px"><%= p.TenSP %></h1>
+    <div class="stars"><%= '★'.repeat(Math.round(avg)) + '☆'.repeat(5 - Math.round(avg)) %> <span class="muted small"><%= reviews.length ? avg.toFixed(1) + ' (' + reviews.length + ' đánh giá)' : 'Chưa có đánh giá' %></span></div>
+    <div class="price-big"><%= h.money(p.GiaBan) %></div>
+    <p><%= p.MoTa %></p>
+
+    <form id="add-form" method="post" action="/gio-hang/them" data-once>
+      <input type="hidden" name="maSP" value="<%= p.MaSP %>">
+      <label>Màu sắc</label>
+      <div class="opt">
+        <% colors.forEach(function (c) { var any = variants.some(function (v) { return v.MaMau === c.MaMau && v.SoLuongTon > 0; }); %>
+          <label><input type="radio" name="maMau" value="<%= c.MaMau %>" <%= any ? '' : 'disabled' %> required><span class="swatch"><i class="dot" style="background:<%= c.MaHex || '#ddd' %>"></i><%= c.TenMau %></span></label>
+        <% }) %>
+      </div>
+      <label>Size</label>
+      <div class="opt">
+        <% sizes.forEach(function (s) { %><label><input type="radio" name="maSize" value="<%= s.MaSize %>" required><span class="chip"><%= s.TenSize %></span></label><% }) %>
+      </div>
+      <p class="muted small" id="stock-info">Chọn đủ màu và size để xem tồn kho</p>
+      <label>Số lượng</label>
+      <div class="qty"><button type="button" data-d="-1">−</button><input type="number" name="soLuong" value="1" min="1" max="99"><button type="button" data-d="1">+</button></div>
+      <div class="row mt">
+        <button class="btn camel" type="submit" <%= p.TongTon < 1 ? 'disabled' : '' %>>Thêm vào giỏ hàng</button>
+        <button class="btn" type="submit" name="mua" value="1" <%= p.TongTon < 1 ? 'disabled' : '' %>>Mua ngay</button>
+      </div>
+    </form>
+    <script id="variants-json" type="application/json"><%- variantsJson %></script>
+    <div class="policy">🚚 Miễn phí vận chuyển đơn từ <%= h.money(1000000) %> · 🔁 Đổi trả trong 7 ngày · 💳 Thanh toán COD hoặc chuyển khoản QR</div>
+  </div>
+</div>
+
+<h2>Đánh giá của khách hàng</h2>
+<% if (!reviews.length) { %><p class="muted">Chưa có đánh giá nào.</p><% } else { %>
+  <div class="card"><% reviews.forEach(function (r) { %>
+    <div style="margin-bottom:12px"><strong><%= r.HoTen %></strong> <span class="stars"><%= '★'.repeat(r.SoSao) %></span> <span class="muted small"><%= h.fmtDate(r.NgayDG, false) %></span><br><%= r.NoiDung %></div>
+  <% }) %></div>
+<% } %>
+
+<% if (related.length) { %>
+<div class="section-title"><h2>Sản phẩm liên quan</h2></div>
+<div class="grid"><% related.forEach(function (x) { %><%- include('../partials/product-card', { p: x }) %><% }) %></div>
+<% } %>
+<%- include('../partials/foot') %>
