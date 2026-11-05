@@ -11,18 +11,43 @@
   <% } %></div>
 <div class="grid2">
   <div class="card"><div class="cell" style="align-items:flex-start"><div class="tbl-thumb" style="width:110px;height:140px"><%- include('../partials/thumb', { p: p }) %></div>
-    <div><p><strong><%= h.money(p.GiaBan) %></strong> · <%= p.TenDM %></p><p><%= p.MoTa %></p>
+    <div><p><strong><%= h.money(p.GiaBan) %></strong><% if (p.PhanTramGiam > 0) { %> <span class="old-price"><%= h.money(p.GiaGoc) %></span> <span class="badge sale">-<%= p.PhanTramGiam %>%</span><% } %> · <%= p.TenDM %></p><p><%= p.MoTa %></p>
       <p><% if (p.LaHot) { %><span class="badge hot">Hot</span> <% } %><% if (p.LaMoi) { %><span class="badge new">Mới</span> <% } %><span class="muted small"><%= p.LuotXem %> lượt xem · tổng tồn <%= p.TongTon %></span></p></div></div></div>
   <div class="card audit"><h3>Lịch sử bản ghi</h3>
     Ngày tạo: <strong><%= h.fmtDate(p.NgayTao) %></strong> — bởi <strong><%= p.TenNguoiTao || '—' %></strong><br>
     Cập nhật gần nhất: <strong><%= p.NgayCapNhat ? h.fmtDate(p.NgayCapNhat) : '—' %></strong> — bởi <strong><%= p.TenNguoiCapNhat || '—' %></strong></div>
 </div>
+
+<h2 class="mt">Hình ảnh sản phẩm <span class="muted small">(<%= images.length %>/<%= MAX_IMAGES %>)</span></h2>
+<% if (!images.length) { %><p class="muted">Chưa có ảnh nào trong thư viện (đang dùng ảnh đại diện hoặc ảnh mặc định).</p><% } else { %>
+<div class="imgs">
+  <% images.forEach(function (im, i) { %>
+    <div class="im"><div class="pic"><img src="/anh/<%= im.MaAnh %>" alt=""></div>
+      <div><%= i === 0 ? '★ Ảnh chính' : 'Ảnh ' + (i + 1) %> · <%= im.TaiLen ? 'tải lên' : 'URL' %></div>
+      <% if (user.role === 'Admin') { %><div class="acts" style="margin-top:6px">
+        <% if (i !== 0) { %><form method="post" action="/admin/san-pham/<%= p.MaSP %>/anh/<%= im.MaAnh %>/chinh"><button class="btn sm ghost">Đặt chính</button></form><% } %>
+        <form method="post" action="/admin/san-pham/<%= p.MaSP %>/anh/<%= im.MaAnh %>/xoa" data-confirm="Xóa ảnh này?"><button class="btn sm ghost">Xóa</button></form></div><% } %>
+    </div>
+  <% }) %>
+</div>
+<% } %>
+<% if (user.role === 'Admin' && images.length < MAX_IMAGES) { %>
+<div class="card mt"><h3>Thêm ảnh</h3>
+  <form method="post" action="/admin/san-pham/<%= p.MaSP %>/anh" enctype="multipart/form-data" class="toolbar">
+    <div><label>Tải ảnh lên (JPG, PNG, GIF, WEBP – tối đa 2MB)</label><input type="file" name="anh" accept="image/jpeg,image/png,image/gif,image/webp"></div>
+    <div><label>Hoặc dán đường dẫn ảnh</label><input name="url" placeholder="https://..." style="min-width:260px"></div>
+    <button class="btn camel">Thêm ảnh</button>
+  </form></div>
+<% } %>
+
 <h2 class="mt">Biến thể &amp; tồn kho</h2>
 <% if (!variants.length) { %><p class="muted">Chưa có biến thể nào.</p><% } else { %>
-<div class="scroll"><table><thead><tr><th>SKU</th><th>Màu</th><th>Size</th><th>Tồn kho</th><th></th></tr></thead><tbody>
+<div class="scroll"><table><thead><tr><th>SKU</th><th>Màu</th><th>Size</th><th>Tồn kho</th><th>Nhập hàng / kiểm kê / điều chỉnh</th><th></th></tr></thead><tbody>
   <% variants.forEach(function (v) { %><tr><td><%= v.SKU %></td><td><i class="dot" style="background:<%= v.MaHex || '#ddd' %>"></i> <%= v.TenMau %></td><td><%= v.TenSize %></td>
-    <td><form class="inline-form" method="post" action="/admin/bien-the/<%= v.MaBT %>/ton-kho"><input type="number" name="ton" min="0" value="<%= v.SoLuongTon %>"><button class="btn sm">Lưu</button>
-      <% if (v.SoLuongTon === 0) { %><span class="badge out">Hết</span><% } else if (v.SoLuongTon <= 3) { %><span class="badge low">Sắp hết</span><% } %></form></td>
+    <td><strong><%= v.SoLuongTon %></strong> <% if (v.SoLuongTon === 0) { %><span class="badge out">Hết</span><% } else if (v.SoLuongTon <= 3) { %><span class="badge low">Sắp hết</span><% } %></td>
+    <td><form class="stock-form" method="post" action="/admin/bien-the/<%= v.MaBT %>/ton-kho">
+      <select name="loai"><option value="nhap">Nhập thêm (+)</option><option value="kiemke">Kiểm kê (đặt = )</option><option value="dieuchinh">Điều chỉnh (đặt = )</option></select>
+      <input type="number" name="so" min="0" value="" placeholder="SL" required><input name="ghiChu" placeholder="Ghi chú" maxlength="255"><button class="btn sm">Lưu</button></form></td>
     <td><% if (user.role === 'Admin') { %><form method="post" action="/admin/bien-the/<%= v.MaBT %>/xoa" data-confirm="Xóa biến thể này?"><button class="btn sm ghost">Xóa</button></form><% } %></td></tr><% }) %>
 </tbody></table></div><% } %>
 <% if (user.role === 'Admin') { %>
@@ -34,4 +59,11 @@
     <div><label>Tồn kho</label><input name="ton" type="number" min="0" value="0" style="width:90px"></div>
     <button class="btn camel">Thêm</button></form></div>
 <% } %>
+
+<h2 class="mt">Lịch sử tồn kho <span class="muted small">(15 thao tác gần nhất)</span></h2>
+<% if (!history.length) { %><p class="muted">Chưa có thao tác tồn kho nào.</p><% } else { %>
+<div class="scroll"><table class="mini-table"><thead><tr><th>Thời gian</th><th>SKU</th><th>Thao tác</th><th>Thay đổi</th><th>Tồn sau</th><th>Ghi chú</th><th>Người thực hiện</th></tr></thead><tbody>
+  <% history.forEach(function (x) { %><tr><td class="small"><%= h.fmtDate(x.ThoiGian) %></td><td><%= x.SKU %></td><td><%= x.LoaiThaoTac %></td>
+    <td><strong style="color:<%= x.SoLuongThayDoi < 0 ? 'var(--bad)' : 'var(--ok)' %>"><%= x.SoLuongThayDoi > 0 ? '+' + x.SoLuongThayDoi : x.SoLuongThayDoi %></strong></td><td><%= x.TonSau %></td><td class="small"><%= x.GhiChu || '' %></td><td class="small"><%= x.HoTen || 'Hệ thống' %></td></tr><% }) %>
+</tbody></table></div><% } %>
 <%- include('../partials/admin-foot') %>

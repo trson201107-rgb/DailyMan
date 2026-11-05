@@ -1,15 +1,31 @@
 <%- include('../partials/head') %>
+<%
+  var gallery = [];
+  if (p.AnhDaiDien) gallery.push(p.AnhDaiDien);
+  images.forEach(function (im) { gallery.push('/anh/' + im.MaAnh); });
+%>
 <p class="muted small mt"><a href="/">Trang chủ</a> / <a href="/san-pham?dm=<%= p.MaDM %>"><%= p.TenDM %></a> / <%= p.TenSP %></p>
 <div class="detail">
-  <div class="big"><%- include('../partials/thumb', { p: p }) %></div>
+  <div class="gallery" id="gallery">
+    <div class="big" title="Bấm để phóng to">
+      <% if (gallery.length) { %><img src="<%= gallery[0] %>" alt="<%= p.TenSP %>"><% } else { %><%- include('../partials/thumb', { p: p }) %><% } %>
+    </div>
+    <% if (gallery.length > 1) { %>
+    <div class="thumbs">
+      <% gallery.forEach(function (g, i) { %><button type="button" class="<%= i === 0 ? 'on' : '' %>" data-src="<%= g %>" aria-label="Ảnh <%= i + 1 %>"><img src="<%= g %>" alt="" loading="lazy"></button><% }) %>
+    </div>
+    <% } %>
+  </div>
+  <div class="lightbox" id="lightbox" role="dialog" aria-label="Xem ảnh lớn"><button type="button" aria-label="Đóng">✕</button><img src="" alt="<%= p.TenSP %>"></div>
   <div>
     <div class="row">
       <% if (p.TongTon < 1) { %><span class="badge out">Hết hàng</span><% } else { %><span class="badge ok">Còn hàng</span><% } %>
+      <% if (p.PhanTramGiam > 0) { %><span class="badge sale">Giảm <%= p.PhanTramGiam %>%</span><% } %>
       <% if (p.LaHot) { %><span class="badge hot">Hot</span><% } %><% if (p.LaMoi) { %><span class="badge new">Mới</span><% } %>
     </div>
     <h1 style="margin-top:10px"><%= p.TenSP %></h1>
     <div class="stars"><%= '★'.repeat(Math.round(avg)) + '☆'.repeat(5 - Math.round(avg)) %> <span class="muted small"><%= reviews.length ? avg.toFixed(1) + ' (' + reviews.length + ' đánh giá)' : 'Chưa có đánh giá' %></span></div>
-    <div class="price-big"><%= h.money(p.GiaBan) %></div>
+    <div class="price-big"><%= h.money(p.GiaBan) %><% if (p.PhanTramGiam > 0) { %><span class="old-price"><%= h.money(p.GiaGoc) %></span><% } %></div>
     <p><%= p.MoTa %></p>
 
     <form id="add-form" method="post" action="/gio-hang/them" data-once>
@@ -37,9 +53,23 @@
   </div>
 </div>
 
-<h2>Đánh giá của khách hàng</h2>
-<% if (!reviews.length) { %><p class="muted">Chưa có đánh giá nào.</p><% } else { %>
-  <div class="card"><% reviews.forEach(function (r) { %>
+<h2 id="danh-gia">Đánh giá của khách hàng</h2>
+<% if (!user) { %>
+  <div class="panel"><a href="/dang-nhap"><u>Đăng nhập</u></a> để đánh giá sản phẩm này (chỉ khách đã mua và nhận hàng mới đánh giá được).</div>
+<% } else if (canReview) { %>
+  <form method="post" action="/san-pham/<%= p.MaSP %>/danh-gia" class="panel">
+    <strong><%= myReview ? 'Đánh giá của bạn (sửa lại)' : 'Gửi đánh giá của bạn' %></strong>
+    <div class="opt" style="margin:8px 0">
+      <% [1,2,3,4,5].forEach(function (n) { %><label><input type="radio" name="soSao" value="<%= n %>" <%= myReview && myReview.SoSao === n ? 'checked' : '' %> required><span class="chip"><%= n %> ★</span></label><% }) %>
+    </div>
+    <textarea name="noiDung" rows="3" maxlength="500" placeholder="Chia sẻ cảm nhận về chất liệu, form dáng, size..."><%= myReview ? myReview.NoiDung : '' %></textarea>
+    <button class="btn sm mt" type="submit">Gửi đánh giá</button>
+  </form>
+<% } else { %>
+  <div class="panel">Bạn cần mua và nhận hàng (đơn <strong>Hoàn thành</strong>) mới đánh giá được sản phẩm này.</div>
+<% } %>
+<% if (!reviews.length) { %><p class="muted mt">Chưa có đánh giá nào.</p><% } else { %>
+  <div class="card mt"><% reviews.forEach(function (r) { %>
     <div style="margin-bottom:12px"><strong><%= r.HoTen %></strong> <span class="stars"><%= '★'.repeat(r.SoSao) %></span> <span class="muted small"><%= h.fmtDate(r.NgayDG, false) %></span><br><%= r.NoiDung %></div>
   <% }) %></div>
 <% } %>

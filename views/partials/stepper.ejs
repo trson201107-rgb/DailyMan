@@ -1,0 +1,7 @@
+<% var steps = ['Giỏ hàng', 'Thông tin & thanh toán', 'Hoàn tất']; %>
+<div class="stepper" aria-label="Các bước mua hàng">
+  <% steps.forEach(function (s, i) { var n = i + 1; var cls = n < step ? 'done' : n === step ? 'now' : ''; %>
+    <div class="st <%= cls %>"><i><%= n < step ? '✓' : n %></i><span><%= s %></span></div>
+    <% if (i < steps.length - 1) { %><div class="bar <%= n < step ? 'done' : '' %>"></div><% } %>
+  <% }) %>
+</div>

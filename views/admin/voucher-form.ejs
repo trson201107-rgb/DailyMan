@@ -1,0 +1,21 @@
+<%- include('../partials/admin-head') %>
+<p><a href="/admin/voucher">← Danh sách voucher</a></p>
+<h1><%= mode === 'new' ? 'Thêm voucher' : 'Sửa voucher' %></h1>
+<% if (errors.length) { %><div class="errors"><ul><% errors.forEach(function (e) { %><li><%= e %></li><% }) %></ul></div><% } %>
+<form method="post" action="<%= mode === 'new' ? '/admin/voucher' : '/admin/voucher/' + id %>" data-once class="card" style="max-width:640px">
+  <label>Mã voucher *</label><input name="code" value="<%= form.code %>" <%= mode === 'edit' ? 'readonly' : 'required' %> maxlength="20" placeholder="VD: SALE20" style="text-transform:uppercase">
+  <div class="field-row">
+    <div><label>Loại giảm</label><select name="loai"><option value="PHAN_TRAM" <%= form.loai === 'PHAN_TRAM' ? 'selected' : '' %>>Theo phần trăm (%)</option><option value="TIEN" <%= form.loai === 'TIEN' ? 'selected' : '' %>>Theo số tiền (đ)</option></select></div>
+    <div><label>Giá trị giảm *</label><input name="giaTri" inputmode="numeric" value="<%= form.giaTri %>" required></div>
+  </div>
+  <div class="field-row">
+    <div><label>Đơn tối thiểu (đ)</label><input name="toiThieu" inputmode="numeric" value="<%= form.toiThieu %>"></div>
+    <div><label>Số lượt sử dụng *</label><input name="luot" inputmode="numeric" value="<%= form.luot %>" required></div>
+  </div>
+  <div class="field-row">
+    <div><label>Ngày bắt đầu *</label><input type="date" name="bd" value="<%= form.bd %>" required></div>
+    <div><label>Ngày hết hạn *</label><input type="date" name="hh" value="<%= form.hh %>" required></div>
+  </div>
+  <div class="row mt"><button class="btn camel" type="submit">Lưu</button><a class="btn ghost" href="/admin/voucher">Hủy</a></div>
+</form>
+<%- include('../partials/admin-foot') %>

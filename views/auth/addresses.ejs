@@ -1,0 +1,20 @@
+<%- include('../partials/head') %>
+<p class="mt"><a href="/tai-khoan">← Tài khoản của tôi</a></p>
+<div class="row mb"><h1 style="margin:0">Sổ địa chỉ</h1><span class="spacer"></span><a class="btn camel" href="/tai-khoan/dia-chi/them">+ Thêm địa chỉ</a></div>
+<% if (!addresses.length) { %><div class="empty"><h3>Bạn chưa lưu địa chỉ nào</h3><p class="muted">Lưu địa chỉ để đặt hàng nhanh hơn.</p><a class="btn" href="/tai-khoan/dia-chi/them">Thêm địa chỉ</a></div>
+<% } else { %>
+<div class="addr-grid">
+  <% addresses.forEach(function (a) { %>
+    <div class="addr <%= a.MacDinh ? 'sel' : '' %>">
+      <div><strong><%= a.TenNguoiNhan %></strong> · <%= a.SDT %> <% if (a.MacDinh) { %><span class="badge ok">Mặc định</span><% } %></div>
+      <div class="muted small"><%= a.DiaChiCuThe %>, <%= a.QuanHuyen %>, <%= a.TinhThanh %></div>
+      <div class="acts">
+        <a class="btn sm ghost" href="/tai-khoan/dia-chi/<%= a.MaDC %>/sua">Sửa</a>
+        <% if (!a.MacDinh) { %><form method="post" action="/tai-khoan/dia-chi/<%= a.MaDC %>/mac-dinh"><button class="btn sm ghost">Đặt mặc định</button></form><% } %>
+        <form method="post" action="/tai-khoan/dia-chi/<%= a.MaDC %>/xoa" data-confirm="Xóa địa chỉ này?"><button class="btn sm ghost">Xóa</button></form>
+      </div>
+    </div>
+  <% }) %>
+</div>
+<% } %>
+<%- include('../partials/foot') %>

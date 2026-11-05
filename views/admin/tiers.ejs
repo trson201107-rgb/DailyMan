@@ -1,0 +1,20 @@
+<%- include('../partials/admin-head') %>
+<h1>Hạng thành viên</h1>
+<div class="card mb">
+  <div class="row"><div><strong>Áp dụng ưu đãi hạng khi thanh toán:</strong> <span class="badge <%= bat ? 'ok' : 'out' %>"><%= bat ? 'Đang bật' : 'Đang tắt' %></span>
+    <div class="muted small">Khi bật, khách được giảm theo % của hạng ở bước giỏ hàng và thanh toán (cộng thêm với mã giảm giá).</div></div><span class="spacer"></span>
+    <form method="post" action="/admin/hang-thanh-vien/bat-tat"><input type="hidden" name="bat" value="<%= bat ? '0' : '1' %>"><button class="btn <%= bat ? 'ghost' : 'camel' %>"><%= bat ? 'Tắt ưu đãi' : 'Bật ưu đãi' %></button></form></div>
+</div>
+<form method="post" action="/admin/hang-thanh-vien" data-once>
+  <div class="scroll"><table><thead><tr><th>Tên hạng</th><th>Chi tiêu tối thiểu (đ)</th><th>Ưu đãi (%)</th><th>Số khách</th></tr></thead><tbody>
+    <% tiers.forEach(function (t, i) { %><tr>
+      <td><input type="hidden" name="hang[<%= i %>][id]" value="<%= t.MaHang %>"><input name="hang[<%= i %>][ten]" value="<%= t.TenHang %>" required maxlength="30"></td>
+      <td><input name="hang[<%= i %>][chiTieu]" inputmode="numeric" value="<%= t.ChiTieuToiThieu %>" <%= i === 0 ? 'readonly' : '' %> required></td>
+      <td><input name="hang[<%= i %>][pct]" inputmode="numeric" value="<%= t.PhanTramUuDai %>" required></td>
+      <td><%= t.SoKhach %></td></tr><% }) %>
+  </tbody></table></div>
+  <p class="muted small">Hạng thấp nhất bắt đầu từ 0đ; chi tiêu các hạng phải tăng dần; ưu đãi từ 0 đến 50%. Chi tiêu tính trên các đơn đã Hoàn thành.</p>
+  <div class="row"><button class="btn camel" type="submit">Lưu cấu hình</button></div>
+</form>
+<form method="post" action="/admin/hang-thanh-vien/tinh-lai" class="mt" data-confirm="Tính lại hạng của tất cả khách theo tổng chi tiêu hiện tại?"><button class="btn ghost">Tính lại hạng cho tất cả khách</button> <span class="muted small">Hạng cũng tự cập nhật khi đơn hàng của khách hoàn thành.</span></form>
+<%- include('../partials/admin-foot') %>

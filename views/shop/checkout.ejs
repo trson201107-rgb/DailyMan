@@ -1,14 +1,37 @@
 <%- include('../partials/head') %>
+<%- include('../partials/stepper') %>
 <h1 class="mt">Thanh toán</h1>
 <% if (errors.length) { %><div class="errors"><ul><% errors.forEach(function (e) { %><li><%= e %></li><% }) %></ul></div><% } %>
 <form method="post" action="/dat-hang" data-once class="cols">
   <input type="hidden" name="token" value="<%= token %>">
   <div>
     <div class="card">
-      <h3>Thông tin nhận hàng</h3>
-      <label>Họ tên người nhận</label><input name="ten" value="<%= form.ten %>" required>
-      <label>Số điện thoại</label><input name="sdt" value="<%= form.sdt %>" required inputmode="tel">
-      <label>Địa chỉ giao hàng</label><input name="diaChi" value="<%= form.diaChi %>" placeholder="Số nhà, đường, phường/xã, quận/huyện, tỉnh/thành" required>
+      <h3>Địa chỉ giao hàng</h3>
+      <% if (addresses.length) { %>
+      <div class="addr-grid">
+        <% addresses.forEach(function (a) { %>
+          <div class="addr <%= form.maDC === String(a.MaDC) ? 'sel' : '' %>">
+            <label class="pick"><input type="radio" name="maDC" value="<%= a.MaDC %>" <%= form.maDC === String(a.MaDC) ? 'checked' : '' %>>
+              <span><strong><%= a.TenNguoiNhan %></strong> · <%= a.SDT %><br><span class="muted small"><%= a.DiaChiCuThe %>, <%= a.QuanHuyen %>, <%= a.TinhThanh %></span><% if (a.MacDinh) { %><br><span class="badge ok">Mặc định</span><% } %></span></label>
+            <div class="acts"><a class="btn sm ghost" href="/tai-khoan/dia-chi/<%= a.MaDC %>/sua?next=/thanh-toan">Sửa</a></div>
+          </div>
+        <% }) %>
+        <div class="addr"><label class="pick"><input type="radio" name="maDC" value="moi" <%= form.maDC === 'moi' ? 'checked' : '' %>><span><strong>+ Dùng địa chỉ mới</strong></span></label></div>
+      </div>
+      <% } else { %><input type="hidden" name="maDC" value="moi"><% } %>
+      <div id="addr-new" style="margin-top:12px">
+        <div class="field-row">
+          <div><label>Họ tên người nhận</label><input name="ten" data-req value="<%= form.ten %>" maxlength="100"></div>
+          <div><label>Số điện thoại</label><input name="sdt" data-req value="<%= form.sdt %>" inputmode="tel" placeholder="0901234567"></div>
+        </div>
+        <div class="field-row">
+          <div><label>Tỉnh / Thành phố</label><input name="tinh" data-req list="ds-tinh" value="<%= form.tinh %>" maxlength="50" placeholder="Chọn hoặc nhập">
+            <datalist id="ds-tinh"><% provinces.forEach(function (t) { %><option value="<%= t %>"><% }) %></datalist></div>
+          <div><label>Quận / Huyện</label><input name="quan" data-req value="<%= form.quan %>" maxlength="50"></div>
+        </div>
+        <label>Địa chỉ cụ thể</label><input name="cuThe" data-req value="<%= form.cuThe %>" maxlength="150" placeholder="Số nhà, đường, phường/xã">
+        <label class="check"><input type="checkbox" name="luu" value="1" <%= form.luu ? 'checked' : '' %>> Lưu địa chỉ này vào sổ địa chỉ</label>
+      </div>
       <label>Ghi chú (không bắt buộc)</label><textarea name="ghiChu" rows="2"><%= form.ghiChu %></textarea>
     </div>
     <div class="card mt">
@@ -21,10 +44,11 @@
   </div>
   <aside class="card">
     <h3>Đơn hàng của bạn</h3>
-    <% lines.forEach(function (l) { %><div class="sum-row"><span><%= l.TenSP %><br><span class="muted small"><%= l.TenMau %> / <%= l.TenSize %> × <%= l.SoLuong %></span></span><span><%= h.money(l.ThanhTien) %></span></div><% }) %>
+    <% chosen.forEach(function (l) { %><div class="sum-row"><span><%= l.TenSP %><br><span class="muted small"><%= l.TenMau %> / <%= l.TenSize %> × <%= l.SoLuong %></span></span><span><%= h.money(l.ThanhTien) %></span></div><% }) %>
     <hr style="border:0;border-top:1px solid var(--line)">
     <div class="sum-row"><span>Tạm tính</span><span><%= h.money(tienHang) %></span></div>
-    <div class="sum-row"><span>Giảm giá<%= voucher ? ' (' + voucher.MaCode + ')' : '' %></span><span>-<%= h.money(giam) %></span></div>
+    <% if (giamHang > 0) { %><div class="sum-row"><span>Ưu đãi hạng <%= hang.ten %> (<%= hang.pct %>%)</span><span>-<%= h.money(giamHang) %></span></div><% } %>
+    <div class="sum-row"><span>Giảm giá<%= voucher ? ' (' + voucher.MaCode + ')' : '' %></span><span>-<%= h.money(giamVoucher) %></span></div>
     <div class="sum-row"><span>Phí vận chuyển</span><span><%= phi ? h.money(phi) : 'Miễn phí' %></span></div>
     <div class="sum-row total"><span>Tổng cộng</span><span><%= h.money(tong) %></span></div>
     <button class="btn camel block mt" type="submit">Đặt hàng</button>

@@ -1,22 +1,66 @@
 <%- include('../partials/head') %>
+<% if (isNew) { %><%- include('../partials/stepper') %><% } %>
+<%
+  var names = ['Chờ xác nhận', 'Đã xác nhận', 'Đang đóng gói', 'Đang giao', 'Hoàn thành'];
+  var cur = o.MaTrangThai, huy = cur === S.HUY, doiTra = cur === S.DOI_TRA;
+  var voucherGiam = Math.max(0, o.TienGiam - (o.UuDaiHang || 0));
+%>
 <p class="mt"><a href="/don-hang">← Đơn hàng của tôi</a></p>
 <% if (isNew) { %><div class="card mb" style="border-color:var(--ok)"><h2>🎉 Cảm ơn bạn đã đặt hàng!</h2>
   <p>Đơn hàng <strong>#<%= o.MaDH %></strong> đang chờ cửa hàng xác nhận.</p>
   <% if (o.TenPT === 'QR') { %><p class="card" style="background:var(--cream)"><strong>Chuyển khoản:</strong> Ngân hàng MB · STK <strong>0123456789</strong> · Chủ TK: CONG TY DAILYMAN · Số tiền <strong><%= h.money(o.TongThanhToan) %></strong> · Nội dung: <strong>DM<%= o.MaDH %></strong><br><span class="muted small">(Thông tin minh họa — hệ thống chưa tích hợp cổng thanh toán thật.)</span></p><% } %></div><% } %>
 <div class="row"><h1>Đơn hàng #<%= o.MaDH %></h1><span class="badge st-<%= o.MaTrangThai %>"><%= o.TenTrangThai %></span><span class="spacer"></span>
   <% if (canCancel) { %><form method="post" action="/don-hang/<%= o.MaDH %>/huy" data-confirm="Bạn chắc chắn muốn hủy đơn này?"><button class="btn danger sm">Hủy đơn</button></form><% } else { %><button class="btn sm" disabled title="Chỉ hủy được khi đơn còn Chờ xác nhận">Hủy đơn</button><% } %></div>
+
+<div class="track" aria-label="Tiến trình đơn hàng">
+  <% names.forEach(function (n, i) { var id = i + 1;
+     var cls = huy ? (o.moc[id] ? 'done' : 'off') : (cur >= 5 ? 'done' : id < cur ? 'done' : id === cur ? 'now' : ''); %>
+    <div class="tk <%= cls %>"><i><%= cls === 'done' ? '✓' : id %></i><b><%= n %></b><%= o.moc[id] ? h.fmtDate(o.moc[id]) : '' %></div>
+  <% }) %>
+</div>
+<% if (huy) { %><div class="panel bad" style="margin-top:0">Đơn hàng đã bị hủy.</div><% } %>
+<% if (doiTra) { %><div class="panel ok" style="margin-top:0">Yêu cầu đổi trả của đơn này đã được chấp nhận.</div><% } %>
+
 <div class="cols">
   <div>
     <div class="scroll"><table><thead><tr><th>Sản phẩm</th><th>Đơn giá</th><th>SL</th><th>Thành tiền</th></tr></thead><tbody>
       <% o.lines.forEach(function (l) { %><tr><td><div class="cell"><div class="tbl-thumb"><%- include('../partials/thumb', { p: l }) %></div><div><a href="/san-pham/<%= l.MaSP %>"><%= l.TenSP %></a><br><span class="muted small"><%= l.TenMau %> / <%= l.TenSize %></span></div></div></td>
         <td><%= h.money(l.DonGia) %></td><td><%= l.SoLuong %></td><td><%= h.money(l.DonGia * l.SoLuong) %></td></tr><% }) %></tbody></table></div>
-    <div class="card mt"><h3>Tiến trình đơn hàng</h3>
+
+    <% if (o.doiTra) { %>
+      <div class="panel <%= o.doiTra.TrangThai === 'Đã chấp nhận' ? 'ok' : o.doiTra.TrangThai === 'Từ chối' ? 'bad' : 'warn' %>">
+        <strong>Yêu cầu đổi trả #<%= o.doiTra.MaYC %> – <%= o.doiTra.TrangThai %></strong>
+        <div class="small muted">Gửi lúc <%= h.fmtDate(o.doiTra.NgayTao) %><% if (o.doiTra.NgayXuLy) { %> · Xử lý lúc <%= h.fmtDate(o.doiTra.NgayXuLy) %><% } %></div>
+        <p style="margin:8px 0 0">Lý do của bạn: <%= o.doiTra.LyDo %></p>
+        <% if (o.doiTra.LyDoTuChoi) { %><p style="margin:6px 0 0"><strong>Lý do từ chối:</strong> <%= o.doiTra.LyDoTuChoi %></p><% } %>
+      </div>
+    <% } %>
+    <% if (canReturn) { %>
+      <form method="post" action="/don-hang/<%= o.MaDH %>/doi-tra" class="panel" data-once>
+        <strong>Yêu cầu đổi trả</strong> <span class="muted small">(trong <%= RETURN_DAYS %> ngày kể từ khi đơn hoàn thành)</span>
+        <label>Lý do đổi trả *</label><textarea name="lyDo" rows="3" maxlength="500" required placeholder="Ví dụ: sai size, sản phẩm lỗi, không đúng mô tả..."></textarea>
+        <button class="btn sm mt" type="submit">Gửi yêu cầu đổi trả</button>
+      </form>
+    <% } else if (hetHanDoiTra) { %>
+      <div class="panel">Đơn này đã quá <%= RETURN_DAYS %> ngày kể từ khi hoàn thành nên không còn đổi trả được.</div>
+    <% } else if (!o.doiTra && [S.XAC_NHAN, S.DONG_GOI, S.DANG_GIAO].indexOf(cur) !== -1) { %>
+      <form method="post" action="/don-hang/<%= o.MaDH %>/doi-tra" class="panel" data-once>
+        <strong>Yêu cầu đổi trả</strong> <span class="muted small">(chỉ áp dụng khi đơn đã Hoàn thành)</span>
+        <label>Lý do đổi trả *</label><textarea name="lyDo" rows="2" maxlength="500" required></textarea>
+        <button class="btn sm mt" type="submit">Gửi yêu cầu đổi trả</button>
+      </form>
+    <% } else if (!o.doiTra && cur === S.CHO) { %>
+      <div class="panel"><button class="btn sm" disabled>Yêu cầu đổi trả</button> <span class="muted small">Đơn đang chờ xác nhận: bạn có thể hủy đơn thay vì đổi trả.</span></div>
+    <% } %>
+
+    <div class="card mt"><h3>Nhật ký đơn hàng</h3>
       <ul class="timeline"><% o.history.forEach(function (x) { %><li><strong><%= x.TenTrangThai %></strong> <span class="muted small">· <%= h.fmtDate(x.ThoiGian) %></span><br><span class="muted small"><%= x.GhiChu %></span></li><% }) %></ul></div>
   </div>
   <aside class="card">
     <h3>Giao đến</h3><p><strong><%= o.TenNguoiNhan %></strong><br><%= o.SDTNguoiNhan %><br><%= o.DiaChiGiao %><% if (o.GhiChu) { %><br><span class="muted small">Ghi chú: <%= o.GhiChu %></span><% } %></p>
     <div class="sum-row"><span>Tạm tính</span><span><%= h.money(o.TienHang) %></span></div>
-    <div class="sum-row"><span>Giảm giá<%= o.MaCode ? ' (' + o.MaCode + ')' : '' %></span><span>-<%= h.money(o.TienGiam) %></span></div>
+    <% if (o.UuDaiHang > 0) { %><div class="sum-row"><span>Ưu đãi hạng thành viên</span><span>-<%= h.money(o.UuDaiHang) %></span></div><% } %>
+    <div class="sum-row"><span>Giảm giá<%= o.MaCode ? ' (' + o.MaCode + ')' : '' %></span><span>-<%= h.money(voucherGiam) %></span></div>
     <div class="sum-row"><span>Phí vận chuyển</span><span><%= o.PhiVanChuyen ? h.money(o.PhiVanChuyen) : 'Miễn phí' %></span></div>
     <div class="sum-row total"><span>Tổng cộng</span><span><%= h.money(o.TongThanhToan) %></span></div>
     <p class="muted small">Thanh toán: <%= o.TenPT %> · <%= o.TrangThaiTT %></p>

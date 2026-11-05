@@ -8,13 +8,14 @@
       <label>Số điện thoại</label><input name="sdt" value="<%= u.SoDienThoai %>" required>
       <button class="btn mt" type="submit">Lưu thay đổi</button>
     </form>
+    <p class="mt"><a class="btn sm ghost" href="/tai-khoan/dia-chi">Sổ địa chỉ (<%= addresses.length %>)</a> <a class="btn sm ghost" href="/don-hang">Đơn hàng của tôi</a></p>
     <p class="muted small mt">Vai trò: <%= u.TenVaiTro %><% if (u.TenVaiTro === 'Customer') { %> · Hạng thành viên: <strong><%= sp.hang ? sp.hang.TenHang : u.TenHang %></strong> (ưu đãi <%= sp.hang ? sp.hang.PhanTramUuDai : 0 %>%) · Tổng chi tiêu: <%= h.money(sp.tong) %><% } %></p>
   </div>
   <div class="card"><h3>Đổi mật khẩu</h3>
     <form method="post" action="/tai-khoan/mat-khau">
-      <label>Mật khẩu hiện tại</label><input type="password" name="matKhauCu" required>
-      <label>Mật khẩu mới</label><input type="password" name="matKhauMoi" required minlength="6">
-      <label>Nhập lại mật khẩu mới</label><input type="password" name="matKhauMoi2" required minlength="6">
+      <label>Mật khẩu hiện tại</label><input type="password" name="matKhauCu" required data-toggle-pw>
+      <label>Mật khẩu mới</label><input type="password" name="matKhauMoi" required minlength="6" data-toggle-pw>
+      <label>Nhập lại mật khẩu mới</label><input type="password" name="matKhauMoi2" required minlength="6" data-toggle-pw>
       <button class="btn mt" type="submit">Đổi mật khẩu</button>
     </form>
   </div>

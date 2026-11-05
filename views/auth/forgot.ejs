@@ -1,0 +1,23 @@
+<%- include('../partials/head') %>
+<div class="auth card">
+  <h2>Quên mật khẩu</h2>
+  <% if (sent) { %>
+    <div class="panel ok" style="margin-top:0">
+      <strong>Đã gửi hướng dẫn.</strong>
+      <p style="margin:6px 0 0">Nếu <strong><%= email %></strong> đã đăng ký tài khoản, chúng tôi vừa gửi một liên kết đặt lại mật khẩu tới email này. Liên kết có hiệu lực trong 30 phút và chỉ dùng được một lần. Hãy kiểm tra cả thư mục Spam.</p>
+    </div>
+    <% if (demoLink) { %>
+      <div class="panel warn"><strong>Chế độ demo (chưa cấu hình gửi email):</strong><br><a href="<%= demoLink %>"><%= demoLink %></a><br><span class="small muted">Chỉ hiện khi bật RESET_SHOW_LINK để demo. Không dùng trên hệ thống thật.</span></div>
+    <% } %>
+    <p class="center small mt"><a href="/dang-nhap">← Quay lại đăng nhập</a></p>
+  <% } else { %>
+    <p class="muted">Nhập email đã đăng ký, chúng tôi sẽ gửi liên kết để bạn đặt mật khẩu mới.</p>
+    <% if (errors.length) { %><div class="errors"><ul><% errors.forEach(function (e) { %><li><%= e %></li><% }) %></ul></div><% } %>
+    <form method="post" action="/quen-mat-khau" data-once>
+      <label>Email</label><input type="email" name="email" value="<%= email %>" required autofocus>
+      <button class="btn block mt" type="submit">Gửi liên kết đặt lại mật khẩu</button>
+    </form>
+    <p class="center small mt"><a href="/dang-nhap">← Quay lại đăng nhập</a></p>
+  <% } %>
+</div>
+<%- include('../partials/foot') %>

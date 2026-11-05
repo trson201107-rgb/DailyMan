@@ -1,0 +1,29 @@
+<%- include('../partials/admin-head') %>
+<h1>Yêu cầu đổi trả</h1>
+<div class="tabs">
+  <a class="<%= !status ? 'on' : '' %>" href="<%= urlWith({ tt: '', page: '' }) %>">Tất cả (<%= counts.all %>)</a>
+  <% [RETURN.CHO, RETURN.OK, RETURN.NO].forEach(function (s) { %><a class="<%= status === s ? 'on' : '' %>" href="<%= urlWith({ tt: s, page: '' }) %>"><%= s %> (<%= counts[s] || 0 %>)</a><% }) %>
+</div>
+<form method="get" class="toolbar">
+  <% if (status) { %><input type="hidden" name="tt" value="<%= status %>"><% } %>
+  <div><label>Mã đơn / mã yêu cầu / khách hàng</label><input name="q" value="<%= q %>"></div>
+  <button class="btn">Tìm</button><a class="btn ghost" href="/admin/doi-tra">Xóa lọc</a>
+</form>
+<% if (!items.length) { %><div class="empty">Không có yêu cầu đổi trả nào.</div><% } else { %>
+<div class="scroll"><table><thead><tr><th>Yêu cầu</th><th>Đơn</th><th>Khách hàng</th><th>Lý do của khách</th><th>Giá trị đơn</th><th>Trạng thái</th><th>Xử lý</th></tr></thead><tbody>
+  <% items.forEach(function (r) { %><tr>
+    <td><strong>#<%= r.MaYC %></strong><br><span class="muted small"><%= h.fmtDate(r.NgayTao) %></span></td>
+    <td><a href="/admin/don-hang/<%= r.MaDH %>">#<%= r.MaDH %></a></td>
+    <td><%= r.HoTen %><br><span class="muted small"><%= r.Email %></span></td>
+    <td style="max-width:280px"><%= r.LyDo %></td><td><%= h.money(r.TongThanhToan) %></td>
+    <td><span class="badge <%= r.TrangThai === RETURN.OK ? 'ok' : r.TrangThai === RETURN.NO ? 'out' : 'low' %>"><%= r.TrangThai %></span>
+      <% if (r.NgayXuLy) { %><br><span class="muted small"><%= r.NguoiXuLy || '' %> · <%= h.fmtDate(r.NgayXuLy) %></span><% } %>
+      <% if (r.LyDoTuChoi) { %><br><span class="small">Lý do từ chối: <%= r.LyDoTuChoi %></span><% } %></td>
+    <td><% if (r.TrangThai === RETURN.CHO) { %>
+      <form method="post" action="/admin/doi-tra/<%= r.MaYC %>/chap-nhan" data-confirm="Chấp nhận yêu cầu đổi trả #<%= r.MaYC %>? Đơn #<%= r.MaDH %> sẽ chuyển sang trạng thái Đổi trả."><button class="btn sm camel">Chấp nhận</button></form>
+      <form method="post" action="/admin/doi-tra/<%= r.MaYC %>/tu-choi" style="margin-top:6px"><input name="lyDo" placeholder="Lý do từ chối (bắt buộc)" maxlength="500" required style="margin-bottom:4px"><button class="btn sm ghost">Từ chối</button></form>
+    <% } else { %><span class="muted small">Đã xử lý</span><% } %></td></tr><% }) %>
+</tbody></table></div>
+<%- include('../partials/pagination') %>
+<% } %>
+<%- include('../partials/admin-foot') %>

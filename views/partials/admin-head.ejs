@@ -13,8 +13,11 @@
     <% var isAdmin = user.role === 'Admin'; %>
     <% if (isAdmin) { %><a href="/admin" class="<%= path === '/admin' ? 'active' : '' %>">📊 Tổng quan</a><% } %>
     <a href="/admin/don-hang" class="<%= path.indexOf('/admin/don-hang') === 0 ? 'active' : '' %>">📦 Đơn hàng</a>
+    <a href="/admin/doi-tra" class="<%= path.indexOf('/admin/doi-tra') === 0 ? 'active' : '' %>">🔁 Đổi trả</a>
     <a href="/admin/san-pham" class="<%= path.indexOf('/admin/san-pham') === 0 ? 'active' : '' %>">👕 Sản phẩm &amp; tồn kho</a>
-    <% if (isAdmin) { %><a href="/admin/danh-muc" class="<%= path.indexOf('/admin/danh-muc') === 0 ? 'active' : '' %>">🗂 Danh mục</a><% } %>
+    <% if (isAdmin) { %><a href="/admin/danh-muc" class="<%= path.indexOf('/admin/danh-muc') === 0 ? 'active' : '' %>">🗂 Danh mục</a>
+    <a href="/admin/voucher" class="<%= path.indexOf('/admin/voucher') === 0 ? 'active' : '' %>">🎟 Khuyến mãi &amp; voucher</a>
+    <a href="/admin/hang-thanh-vien" class="<%= path.indexOf('/admin/hang-thanh-vien') === 0 ? 'active' : '' %>">⭐ Hạng thành viên</a><% } %>
     <a href="/admin/tai-khoan" class="<%= path.indexOf('/admin/tai-khoan') === 0 ? 'active' : '' %>">👥 <%= isAdmin ? 'Tài khoản' : 'Khách hàng' %></a>
     <a href="/">↗ Xem cửa hàng</a>
     <div class="who"><%= user.name %><br><span class="muted"><%= user.role %></span>

@@ -1,17 +1,39 @@
 <%- include('../partials/head') %>
 <% var catName = (categories.find(function (c) { return c.MaDM === f.dm; }) || {}).TenDM; %>
 <h1 class="mt"><%= catName || (f.tag === 'hot' ? 'Sản phẩm Hot' : f.tag === 'moi' ? 'Hàng mới' : 'Tất cả sản phẩm') %></h1>
+<%
+  var chips = [];
+  var cName = function (arr, key, val) { var x = arr.find(function (i) { return i[key] === val; }); return x; };
+  if (f.q) chips.push(['Từ khóa: ' + f.q, 'q']);
+  if (f.dm && catName) chips.push(['Danh mục: ' + catName, 'dm']);
+  if (f.gia) chips.push([{ 'duoi500': 'Dưới 500.000đ', '500-1000': '500.000đ – 1.000.000đ', 'tren1000': 'Trên 1.000.000đ' }[f.gia], 'gia']);
+  if (f.giaMin != null) chips.push(['Giá từ ' + h.money(f.giaMin), 'giaMin']);
+  if (f.giaMax != null) chips.push(['Giá đến ' + h.money(f.giaMax), 'giaMax']);
+  if (f.mau && cName(colors, 'MaMau', f.mau)) chips.push(['Màu: ' + cName(colors, 'MaMau', f.mau).TenMau, 'mau']);
+  if (f.size && cName(sizes, 'MaSize', f.size)) chips.push(['Size: ' + cName(sizes, 'MaSize', f.size).TenSize, 'size']);
+  if (f.conHang) chips.push(['Còn hàng', 'conHang']);
+  if (f.tag) chips.push([f.tag === 'hot' ? 'Hot' : 'Mới', 'tag']);
+%>
+<% if (chips.length) { %><div class="active-filters" aria-label="Bộ lọc đang áp dụng">
+  <% chips.forEach(function (c) { var o = { page: '' }; o[c[1]] = ''; %><a href="<%= urlWith(o) %>" title="Bỏ tiêu chí này"><%= c[0] %> <b>✕</b></a><% }) %>
+</div><% } %>
 <div class="shop">
   <aside class="filters card">
     <form method="get" action="/san-pham">
-      <input type="hidden" name="sort" value="<%= f.sort %>">
+      <input type="hidden" name="sort" value="<%= f.sort %>"><% if (f.gia) { %><input type="hidden" name="gia" value="<%= f.gia %>"><% } %>
       <h3>Tìm kiếm</h3><input name="q" value="<%= f.q %>" placeholder="Tên sản phẩm, danh mục...">
       <h3>Danh mục</h3>
       <div class="radio-list">
         <label><input type="radio" name="dm" value="" <%= !f.dm ? 'checked' : '' %>> Tất cả</label>
         <% categories.forEach(function (c) { %><label><input type="radio" name="dm" value="<%= c.MaDM %>" <%= f.dm === c.MaDM ? 'checked' : '' %>> <%= c.TenDM %></label><% }) %>
       </div>
-      <h3>Khoảng giá (đ)</h3>
+      <h3>Khoảng giá</h3>
+      <div>
+        <a class="chip-link <%= f.gia === 'duoi500' ? 'on' : '' %>" href="<%= urlWith({ gia: f.gia === 'duoi500' ? '' : 'duoi500', giaMin: '', giaMax: '', page: '' }) %>">Dưới 500.000đ</a>
+        <a class="chip-link <%= f.gia === '500-1000' ? 'on' : '' %>" href="<%= urlWith({ gia: f.gia === '500-1000' ? '' : '500-1000', giaMin: '', giaMax: '', page: '' }) %>">500.000đ – 1 triệu</a>
+        <a class="chip-link <%= f.gia === 'tren1000' ? 'on' : '' %>" href="<%= urlWith({ gia: f.gia === 'tren1000' ? '' : 'tren1000', giaMin: '', giaMax: '', page: '' }) %>">Trên 1 triệu</a>
+      </div>
+      <p class="muted small" style="margin:8px 0 4px">Hoặc nhập khoảng giá (đ):</p>
       <div class="field-row"><input name="giaMin" inputmode="numeric" placeholder="Từ" value="<%= f.giaMin != null ? f.giaMin : '' %>"><input name="giaMax" inputmode="numeric" placeholder="Đến" value="<%= f.giaMax != null ? f.giaMax : '' %>"></div>
       <h3>Màu sắc</h3>
       <div class="swatches opt">
@@ -38,7 +60,7 @@
     <div class="sortbar">
       <strong><%= meta.total %> sản phẩm phù hợp</strong>
       <form method="get" action="/san-pham" class="row">
-        <% ['q','dm','giaMin','giaMax','mau','size','tag'].forEach(function (k) { var v = f[k]; if (v !== '' && v !== null && v !== undefined) { %><input type="hidden" name="<%= k %>" value="<%= v %>"><% } }) %>
+        <% ['q','dm','giaMin','giaMax','mau','size','tag','gia'].forEach(function (k) { var v = f[k]; if (v !== '' && v !== null && v !== undefined) { %><input type="hidden" name="<%= k %>" value="<%= v %>"><% } }) %>
         <% if (f.conHang) { %><input type="hidden" name="conHang" value="1"><% } %>
         <label class="small" style="margin:0">Sắp xếp</label>
         <select name="sort" data-autosubmit>

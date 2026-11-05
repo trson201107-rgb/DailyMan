@@ -7,6 +7,7 @@
     <label>Tên sản phẩm *</label><input name="ten" value="<%= form.ten %>" maxlength="150" required>
     <div class="field-row">
       <div><label>Giá bán (đ) *</label><input name="gia" inputmode="numeric" value="<%= form.gia %>" required></div>
+      <div><label>Giá gốc (đ) – để trống nếu không giảm giá</label><input name="giaGoc" inputmode="numeric" value="<%= form.giaGoc %>" placeholder="Phải ≥ giá bán"></div>
       <div><label>Danh mục *</label><select name="maDM" required><option value="">Chọn danh mục</option><% categories.forEach(function (c) { %><option value="<%= c.MaDM %>" <%= String(form.maDM) === String(c.MaDM) ? 'selected' : '' %>><%= c.TenDM %></option><% }) %></select></div>
     </div>
     <label>Ảnh đại diện (URL, bỏ trống sẽ dùng ảnh mặc định)</label><input name="anh" value="<%= form.anh %>" placeholder="https://...">

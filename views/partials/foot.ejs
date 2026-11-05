@@ -1,4 +1,12 @@
 </main>
-<footer class="footer"><div class="container">© dailyman – Website quản lý thời trang nam thường nhật · Đồ án Sprint 2</div></footer>
+<footer class="footer"><div class="container">© dailyman – Website quản lý thời trang nam thường nhật · Đồ án Sprint 3</div></footer>
+<nav class="bottom-nav" aria-label="Điều hướng nhanh">
+  <a href="/" class="<%= path === '/' ? 'on' : '' %>"><b>🏠</b>Trang chủ</a>
+  <a href="/san-pham" class="<%= path.indexOf('/san-pham') === 0 ? 'on' : '' %>"><b>🛍</b>Cửa hàng</a>
+  <a href="/gio-hang" class="<%= path === '/gio-hang' ? 'on' : '' %>"><b>🛒</b>Giỏ hàng<% if (cartCount > 0) { %><span class="n"><%= cartCount %></span><% } %></a>
+  <a href="/don-hang" class="<%= path.indexOf('/don-hang') === 0 ? 'on' : '' %>"><b>📦</b>Đơn hàng</a>
+  <a href="<%= user ? '/tai-khoan' : '/dang-nhap' %>" class="<%= path.indexOf('/tai-khoan') === 0 || path === '/dang-nhap' ? 'on' : '' %>"><b>👤</b>Tài khoản</a>
+</nav>
+<script>document.body.classList.add('has-bottom');</script>
 <script src="/js/main.js"></script>
 </body></html>

@@ -55,3 +55,56 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   }
 });
+
+// ===== SPRINT 3 =====
+document.addEventListener('DOMContentLoaded', function () {
+  // Nút Hiện / Ẩn mật khẩu: <input type="password" data-toggle-pw>
+  document.querySelectorAll('input[data-toggle-pw]').forEach(function (inp) {
+    var wrap = document.createElement('div'); wrap.className = 'pw';
+    inp.parentNode.insertBefore(wrap, inp); wrap.appendChild(inp);
+    var b = document.createElement('button'); b.type = 'button'; b.textContent = 'Hiện'; b.setAttribute('aria-label', 'Hiện hoặc ẩn mật khẩu');
+    b.addEventListener('click', function () { var show = inp.type === 'password'; inp.type = show ? 'text' : 'password'; b.textContent = show ? 'Ẩn' : 'Hiện'; });
+    wrap.appendChild(b);
+  });
+  // Thư viện ảnh: bấm ảnh nhỏ để đổi ảnh lớn, bấm ảnh lớn để phóng to
+  var gal = document.getElementById('gallery');
+  if (gal) {
+    var big = gal.querySelector('.big img'); var lb = document.getElementById('lightbox');
+    gal.querySelectorAll('.thumbs button').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        gal.querySelectorAll('.thumbs button').forEach(function (x) { x.classList.remove('on'); }); btn.classList.add('on');
+        if (big) big.src = btn.dataset.src;
+      });
+    });
+    if (lb) {
+      gal.querySelector('.big').addEventListener('click', function () { var i = lb.querySelector('img'); i.src = big ? big.src : ''; lb.classList.add('open'); });
+      lb.addEventListener('click', function () { lb.classList.remove('open'); });
+      document.addEventListener('keydown', function (e) { if (e.key === 'Escape') lb.classList.remove('open'); });
+    }
+  }
+  // Chọn tất cả: <input type="checkbox" data-selall="tên-nhóm"> điều khiển các ô <input data-sel="tên-nhóm">
+  document.querySelectorAll('input[data-selall]').forEach(function (all) {
+    all.addEventListener('change', function () {
+      var boxes = document.querySelectorAll('input[data-sel="' + all.dataset.selall + '"]');
+      boxes.forEach(function (c) { c.checked = all.checked; });
+      if (all.dataset.submit) all.form.submit();
+    });
+  });
+  // Ô tích trong giỏ hàng: đổi lựa chọn thì gửi form để tính lại tổng tiền
+  document.querySelectorAll('input[data-autosubmit-check]').forEach(function (c) { c.addEventListener('change', function () { c.form.submit(); }); });
+  // Thanh công cụ hàng loạt: bấm nút trạng thái đích thì gắn giá trị vào form
+  document.querySelectorAll('button[data-bulk-den]').forEach(function (b) {
+    b.addEventListener('click', function () { document.getElementById('bulk-den').value = b.dataset.bulkDen; });
+  });
+  // Thẻ địa chỉ ở trang thanh toán: ẩn / hiện form địa chỉ mới
+  var newBox = document.getElementById('addr-new');
+  if (newBox) {
+    var upd = function () { var r = document.querySelector('input[name=maDC]:checked'); newBox.style.display = (!r || r.value === 'moi') ? 'block' : 'none';
+      document.querySelectorAll('.addr').forEach(function (c) { var i = c.querySelector('input[name=maDC]'); c.classList.toggle('sel', !!(i && i.checked)); });
+      newBox.querySelectorAll('input[data-req]').forEach(function (i) { i.required = (!r || r.value === 'moi'); }); };
+    document.querySelectorAll('input[name=maDC]').forEach(function (r) { r.addEventListener('change', upd); }); upd();
+  }
+  // Admin trên điện thoại: nút Menu mở danh sách chức năng
+  var menuBtn = document.getElementById('menu-toggle');
+  if (menuBtn) menuBtn.addEventListener('click', function () { document.body.classList.toggle('menu-open'); menuBtn.classList.toggle('on'); });
+});
