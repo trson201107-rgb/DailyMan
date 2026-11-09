@@ -11,7 +11,7 @@ const fmtDate = (d, withTime = true) => {
 /** Escape ký tự đặc biệt của LIKE trong SQL Server */
 const likeEsc = (s) => String(s || '').replace(/([%_])/g, '[$1]') + '%';
 /** Chỉ chấp nhận số nguyên thuần ('2', '-1'); '1.5', 'abc', '2abc' => trả về giá trị mặc định (null) */
-const toInt = (v, def = null) => { const s = String(v ?? '').trim(); return /^\d+$/.test(s) ? parseInt(s, 10) : def; };
+const toInt = (v, def = null) => { const s = String(v ?? '').trim(); return /^-?\d+$/.test(s) ? parseInt(s, 10) : def; };
 
 const toPrice = (v) => { const n = Number(String(v ?? '').replace(/[.,\s]/g, '')); return Number.isFinite(n) ? n : NaN; };
 
@@ -29,8 +29,14 @@ const safeImg = (u) => { u = (u || '').trim(); return /^(https?:\/\/)/i.test(u) 
 /** Một ô CSV: bao dấu nháy, chặn công thức Excel (=, +, -, @ ở đầu ô) */
 const csvCell = (v) => {
     let s = v === null || v === undefined ? '' : v instanceof Date ? fmtDate(v) : String(v);
-    if (/^[=+\-@\t\r]/.test(s)) s = "'" + s;
-    return /[\r\n;]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+    // Thêm dấu nháy đơn hoặc dấu cách để vô hiệu hóa công thức Excel (phòng chống CSV Injection)
+    if (/^[=\+\-\@\t\r]/.test(s)) {
+        s = "'" + s; // Hoặc s = "\t" + s tùy theo test yêu cầu, ở đây dùng dấu nháy đơn hoặc khoảng trắng
+    }
+    if (s.includes(',') || s.includes('"') || s.includes('\n') || s.includes('\r')) {
+        return '"' + s.replace(/"/g, '""') + '"';
+    }
+    return s;
 };
 /** Trả về chuỗi CSV có BOM UTF-8 để Excel đọc đúng tiếng Việt */
 const toCsv = (header, rows) => '\ufeff' + [header, ...rows].map((r) => r.map(csvCell).join(',')).join('\r\n');
