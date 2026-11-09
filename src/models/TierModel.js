@@ -23,7 +23,8 @@ class TierModel {
      * @param {object|object[]} data Single tier object or array of tier objects.
      * @returns {Promise<object[]>} The validated data array.
      */
-    async saveAll(data) {
+    // === CHỈ CẦN THÊM TỪ KHÓA STATIC VÀO ĐÂY ===
+    static async saveAll(data) {
         if (!Array.isArray(data)) {
             data = [data];
         }
@@ -46,7 +47,7 @@ class TierModel {
             // 3. Kiểm tra hạng thấp nhất (phần tử đầu tiên) phải bắt đầu bằng 0
             if (i === 0) {
                 if (chiTieu !== undefined && chiTieu !== '' && Number(chiTieu) !== 0) {
-                    throw new Error('Hạng thấp nhất phải bằng 0');
+                    throw new Error('Hạng: hạng thấp nhất phải bắt đầu từ 0');
                 }
             }
 
