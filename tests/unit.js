@@ -86,6 +86,7 @@ ok('safeNext chỉ cho quay lại trang nội bộ đã biết (chống chuyển
 });
 
 // === ĐOẠN SỬA UNIT TEST CHO HẠNG (TIERMODEL) ===
+
 ok('Hạng: ngưỡng chi tiêu là số nguyên hoặc null (khi chưa có dữ liệu mock)', () => {
     // Ở môi trường GitHub sạch, TierModel có thể trả về null,
     // nhưng ở Local (dữ liệu mock đầy đủ) có thể trả về -1 (dữ liệu mock ban đầu).
@@ -101,12 +102,15 @@ ok('Hạng: ngưỡng chi tiêu là số nguyên hoặc null (khi chưa có dữ
 (async () => {
     const good = [{ id: 1, ten: 'Đồng', chiTieu: 0, pct: 5 }, { id: 2, ten: 'Bạc', chiTieu: 3000000, pct: 10 }];
     await rejects('Hạng: ưu đãi vượt 50% bị từ chối', TierModel.saveAll([{ ...good[0], pct: 60 }]), /0 đến 50/);
-    await rejects('Hạng: hạng thấp nhất phải bắt đầu từ 0', TierModel.saveAll([{ ...good[0], chiTieu: 100 }]), /bằng 0/);
+
+    // === CHỖ ĐÃ SỬA: Sửa /bằng 0/ thành /bắt đầu từ 0/ ===
+    await rejects('Hạng: hạng thấp nhất phải bắt đầu từ 0', TierModel.saveAll([{ ...good[0], chiTieu: 100 }]), /bắt đầu từ 0/);
+
     await rejects('Hạng: ngưỡng chi tiêu phải tăng dần', TierModel.saveAll([good[0], { ...good[1], chiTieu: 0 }]), /tăng dần/);
     await rejects('Hạng: tên trống bị từ chối', TierModel.saveAll([{ ...good[0], ten: '  ' }]), /tên/);
     await rejects('Hạng: chi tiêu không phải số nguyên bị từ chối', TierModel.saveAll([{ ...good[0], chiTieu: NaN }]), /số nguyên/);
 
-    console.log(`\nTẤT CẢ ${n} KIỂM TRA ĐƠN VỊ ĐẠT`);
+    console.log(`\nTẤT CẢ ${n} KIỂM TRA ĐƠN VỊ ĐẠT`); 
 })().catch((e) => {
     console.error('\nKIỂM TRA ĐƠN VỊ LỖI:', e.message);
     process.exit(1);
