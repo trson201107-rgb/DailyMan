@@ -1,0 +1,70 @@
+@model PagedList<Voucher>
+@{
+    string loai = ViewBag.Loai; var req = Context.Request; bool isAdmin = User.IsInRole(Const.ROLE_ADMIN);
+    var dms = (Dictionary<int, string>)ViewBag.DanhMucs; var hangs = (Dictionary<int, string>)ViewBag.Hangs; var daDung = (Dictionary<int, int>)ViewBag.DaDung;
+    string act = loai == Const.KM_COMBO ? "Combo" : loai == Const.KM_CAP_BAC ? "Tier" : "Event";
+    ViewData["Title"] = Const.TenLoaiKM(loai);
+    string Giam(Voucher v) => (v.LoaiGiam == Const.GIAM_PHAN_TRAM ? $"{v.GiaTriGiam:0}%" : Fmt.Money(v.GiaTriGiam)) + (v.LoaiGiam == Const.GIAM_PHAN_TRAM && v.GiamToiDa > 0 ? $" (tối đa {Fmt.Money(v.GiamToiDa)})" : "");
+    string DieuKien(Voucher v)
+    {
+        if (v.LoaiKM == Const.KM_CAP_BAC) return "Hạng " + hangs.GetValueOrDefault(v.MaHangToiThieu ?? 0, "?") + " trở lên";
+        if (v.LoaiKM == Const.KM_COMBO)
+        {
+            var g1 = $"{v.SoLuong1} SP " + (v.MaDM1 == null ? "bất kỳ" : dms.GetValueOrDefault(v.MaDM1.Value, "?"));
+            return v.MaDM2 == null ? "Mua " + g1 : $"Mua {g1} + {v.SoLuong2} SP {dms.GetValueOrDefault(v.MaDM2.Value, "?")}";
+        }
+        return v.DonToiThieu > 0 ? "Đơn từ " + Fmt.Money(v.DonToiThieu) : "Mọi đơn hàng";
+    }
+}
+<div class="row"><h1>@Const.TenLoaiKM(loai)</h1><span class="spacer"></span><a class="btn camel" asp-action="Form" asp-route-loai="@loai">+ Tạo mã mới</a></div>
+
+@if (loai == Const.KM_CAP_BAC)
+{
+    var hs = (List<HangThanhVien>)ViewBag.Hangs2; var soKhach = (Dictionary<int, int>)ViewBag.SoKhach; bool auto = ViewBag.AutoBat;
+    <div class="card mb">
+        <div class="row"><h3 style="margin:0">Ưu đãi tự động theo hạng thành viên</h3><span class="spacer"></span>
+            <span class="badge @(auto ? "ok" : "hidden")">@(auto ? "Đang bật" : "Đang tắt")</span>
+            @if (isAdmin) { <form asp-action="ToggleAuto" method="post"><button class="btn sm ghost">@(auto ? "Tắt" : "Bật")</button></form> }</div>
+        <p class="muted small">Khi bật, mỗi khách được giảm tự động theo phần trăm của hạng mình ở bước thanh toán. Hạng được tính từ tổng chi tiêu các đơn đã hoàn thành.@(isAdmin ? "" : " (Chỉ quản trị viên được sửa bảng hạng.)")</p>
+        <div class="scroll"><table class="mini-table">
+            <thead><tr><th>Hạng</th><th>Chi tiêu tối thiểu</th><th>Ưu đãi (%)</th><th>Số khách</th>@if (isAdmin) { <th></th> }</tr></thead>
+            <tbody>
+            @foreach (var h in hs)
+            {
+                <tr><td><b>@h.TenHang</b></td>
+                    @if (isAdmin)
+                    {
+                        <td><input form="h@(h.MaHang)" name="chiTieu" type="number" min="0" step="1000" value="@((long)h.ChiTieuToiThieu)" style="width:140px"></td>
+                        <td><input form="h@(h.MaHang)" name="phanTram" type="number" min="0" max="50" value="@h.PhanTramUuDai" style="width:80px"></td>
+                        <td>@soKhach.GetValueOrDefault(h.MaHang)</td>
+                        <td><form id="h@(h.MaHang)" asp-action="SaveTier" method="post"><input type="hidden" name="maHang" value="@h.MaHang"><button class="btn sm">Lưu</button></form></td>
+                    }
+                    else { <td>@Fmt.Money(h.ChiTieuToiThieu)</td><td>@h.PhanTramUuDai%</td><td>@soKhach.GetValueOrDefault(h.MaHang)</td> }</tr>
+            }
+            </tbody></table></div>
+    </div>
+    <h3>Mã giảm giá dành riêng theo cấp bậc</h3>
+}
+
+<form method="get" class="toolbar">
+    <div><label>Tìm kiếm</label><input name="q" value="@req.Query["q"]" placeholder="Mã hoặc tên chương trình"></div>
+    <div><label>Tình trạng</label><select name="tinhTrang"><option value="">Tất cả</option>
+        <option value="chay" selected="@(req.Query["tinhTrang"] == "chay")">Đang chạy</option><option value="sap" selected="@(req.Query["tinhTrang"] == "sap")">Chưa bắt đầu</option>
+        <option value="tat" selected="@(req.Query["tinhTrang"] == "tat")">Đang tắt</option><option value="het" selected="@(req.Query["tinhTrang"] == "het")">Hết hạn / hết lượt</option></select></div>
+    <button class="btn" type="submit">Lọc</button>
+</form>
+<div class="scroll"><table>
+    <thead><tr><th>Mã</th><th>Chương trình</th><th>Mức giảm</th><th>Điều kiện</th><th>Thời gian</th><th>Lượt còn / đã dùng</th><th>Tình trạng</th><th></th></tr></thead>
+    <tbody>
+    @foreach (var v in Model.Items)
+    {
+        <tr><td><b>@v.MaCode</b></td><td>@v.TenChuongTrinh</td><td>@Giam(v)</td><td class="small">@DieuKien(v)@if (v.DonToiThieu > 0 && loai != Const.KM_SU_KIEN) { <br /><span>Đơn từ @Fmt.Money(v.DonToiThieu)</span> }</td>
+            <td class="small">@Fmt.Date(v.NgayBatDau) – @Fmt.Date(v.NgayHetHan)</td><td>@v.SoLuotConLai / @daDung.GetValueOrDefault(v.MaVoucher)</td>
+            <td><span class="badge @(v.TinhTrang == "Đang chạy" ? "ok" : v.TinhTrang == "Đang tắt" || v.TinhTrang == "Chưa bắt đầu" ? "low" : "out")">@v.TinhTrang</span></td>
+            <td><div class="actions"><a class="btn sm ghost" asp-action="Form" asp-route-id="@v.MaVoucher">Sửa</a>
+                <form asp-action="Toggle" asp-route-id="@v.MaVoucher" method="post"><button class="btn sm ghost">@(v.DangBat ? "Tắt" : "Bật")</button></form>
+                @if (isAdmin) { <form asp-action="Delete" asp-route-id="@v.MaVoucher" method="post" data-confirm="Xóa mã @v.MaCode?"><button class="btn sm ghost">Xóa</button></form> }</div></td></tr>
+    }
+    </tbody></table></div>
+@if (Model.Items.Count == 0) { <div class="empty mt">Chưa có mã nào. Bấm "Tạo mã mới" để thêm.</div> }
+@await Html.PartialAsync("_Pager", (Model.Page, Model.TotalPages))

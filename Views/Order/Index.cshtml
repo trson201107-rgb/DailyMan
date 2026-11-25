@@ -1,0 +1,24 @@
+@model PagedList<DonHang>
+@{
+    ViewData["Title"] = "Đơn hàng của tôi";
+    int? st = ViewBag.St; var dem = (Dictionary<int, int>)ViewBag.Dem;
+}
+<h1 class="mt">Đơn hàng của tôi</h1>
+<div class="tabs">
+    <a asp-action="Index" class="@(st == null ? "on" : "")">Tất cả</a>
+    @for (int i = 1; i <= 7; i++) { <a asp-action="Index" asp-route-st="@i" class="@(st == i ? "on" : "")">@Const.TEN_TRANG_THAI[i] (@(dem.GetValueOrDefault(i)))</a> }
+</div>
+@if (Model.Items.Count == 0) { <div class="empty">Chưa có đơn hàng nào.</div> }
+else
+{
+    <div class="scroll"><table>
+        <thead><tr><th>Mã đơn</th><th>Ngày đặt</th><th>Sản phẩm</th><th>Tổng tiền</th><th>Trạng thái</th><th></th></tr></thead>
+        <tbody>
+        @foreach (var d in Model.Items)
+        {
+            <tr><td><b>#@d.MaDH</b></td><td>@Fmt.DateTime(d.NgayDat)</td><td>@d.ChiTiets.Sum(c => c.SoLuong) sản phẩm</td><td>@Fmt.Money(d.ThanhToan?.SoTien ?? d.TongThanhToan)</td>
+                <td><span class="badge st-@d.MaTrangThai">@d.TrangThai?.TenTrangThai</span></td><td><a class="btn sm ghost" asp-action="Details" asp-route-id="@d.MaDH">Xem</a></td></tr>
+        }
+        </tbody></table></div>
+    @await Html.PartialAsync("_Pager", (Model.Page, Model.TotalPages))
+}

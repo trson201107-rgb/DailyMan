@@ -1,0 +1,72 @@
+@{
+    var ctl = (ViewContext.RouteData.Values["controller"] as string ?? "").ToLowerInvariant();
+    var act = (ViewContext.RouteData.Values["action"] as string ?? "").ToLowerInvariant();
+    string On(string c) => ctl == c ? "active" : "";
+    string OnA(string c, string a) => ctl == c && act == a ? "active" : "";
+    bool isAdmin = User.IsInRole(Const.ROLE_ADMIN);
+}
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>@ViewData["Title"] | dailyman Admin</title>
+    <link rel="icon" type="image/svg+xml" href="~/favicon.svg">
+    <link rel="icon" type="image/png" sizes="32x32" href="~/favicon-32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="~/favicon-16.png">
+    <link rel="shortcut icon" href="~/favicon.ico">
+    <link rel="apple-touch-icon" href="~/apple-touch-icon.png">
+    <meta name="theme-color" content="#1B1B1B">
+    <link rel="stylesheet" href="~/css/style.css" asp-append-version="true">
+</head>
+<body>
+<div class="admin">
+    <aside class="side">
+        <a class="logo" asp-area="Admin" asp-controller="Dashboard" asp-action="Index">daily<b>man</b> <span class="small">admin</span></a>
+        <a asp-area="Admin" asp-controller="Dashboard" asp-action="Index" class="@On("dashboard")">📊 Tổng quan</a>
+        <a asp-area="Admin" asp-controller="Orders" asp-action="Index" class="@On("orders")">📦 Đơn hàng</a>
+        <a asp-area="Admin" asp-controller="Returns" asp-action="Index" class="@On("returns")">🔄 Đổi trả</a>
+        <a asp-area="Admin" asp-controller="Products" asp-action="Index" class="@On("products")">👕 Sản phẩm &amp; tồn kho</a>
+        @if (isAdmin) { <a asp-area="Admin" asp-controller="Categories" asp-action="Index" class="@On("categories")">📁 Danh mục</a> }
+
+        <details class="nav-group" open="@(ctl == "discounts")">
+            <summary class="@On("discounts")">🎟️ Mã giảm giá</summary>
+            <a asp-area="Admin" asp-controller="Discounts" asp-action="Event" class="@OnA("discounts", "event")">Giảm theo sự kiện</a>
+            <a asp-area="Admin" asp-controller="Discounts" asp-action="Combo" class="@OnA("discounts", "combo")">Giảm theo combo</a>
+            <a asp-area="Admin" asp-controller="Discounts" asp-action="Tier" class="@OnA("discounts", "tier")">Giảm theo cấp bậc</a>
+        </details>
+
+        <details class="nav-group" open="@(ctl == "accounts")">
+            <summary class="@On("accounts")">👥 Tài khoản</summary>
+            @if (isAdmin)
+            {
+                <a asp-area="Admin" asp-controller="Accounts" asp-action="Admins" class="@OnA("accounts", "admins")">Quản trị viên</a>
+                <a asp-area="Admin" asp-controller="Accounts" asp-action="Staffs" class="@OnA("accounts", "staffs")">Nhân viên</a>
+            }
+            <a asp-area="Admin" asp-controller="Accounts" asp-action="Customers" class="@(ctl == "accounts" && (act == "customers" || act == "customerdetail") ? "active" : "")">Khách hàng</a>
+        </details>
+
+        <a href="/">↗ Xem cửa hàng</a>
+
+        @* ===== Bảng thống kê sổ xuống, nằm ngay dưới "Xem cửa hàng" ===== *@
+        <details class="nav-group stats-group" open="@(ctl == "stats")">
+            <summary class="@On("stats")">📈 Thống kê</summary>
+            <a asp-area="Admin" asp-controller="Stats" asp-action="Inventory" class="@OnA("stats", "inventory")">Tồn kho</a>
+            <a asp-area="Admin" asp-controller="Stats" asp-action="Revenue" class="@OnA("stats", "revenue")">Doanh thu</a>
+            <a asp-area="Admin" asp-controller="Stats" asp-action="Kpi" class="@OnA("stats", "kpi")">KPI &amp; biểu đồ</a>
+            <a asp-area="Admin" asp-controller="Stats" asp-action="ReturnsCancels" class="@OnA("stats", "returnscancels")">Tỷ lệ hoàn / hủy đơn</a>
+            <a asp-area="Admin" asp-controller="Stats" asp-action="Products" class="@OnA("stats", "products")">Bán chạy &amp; hết hàng</a>
+            <a asp-area="Admin" asp-controller="Stats" asp-action="SizeColor" class="@OnA("stats", "sizecolor")">Bán chạy theo size, màu</a>
+        </details>
+
+        <div class="who">@User.Identity!.Name<br><span class="muted">@User.Role()</span>
+            <form asp-area="" asp-controller="Account" asp-action="Logout" method="post" style="margin-top:8px"><button class="btn sm ghost" type="submit">Đăng xuất</button></form>
+        </div>
+    </aside>
+    <div class="main">
+        @await Html.PartialAsync("_Flash")
+        @RenderBody()
+    </div>
+</div>
+<script src="~/js/main.js" asp-append-version="true"></script>
+</body>
+</html>

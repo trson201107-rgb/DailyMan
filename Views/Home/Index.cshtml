@@ -1,0 +1,16 @@
+@model HomeVm
+@{ ViewData["Title"] = "Trang chủ"; }
+<section class="hero">
+    <h1>Thời trang nam thường nhật</h1>
+    <p>Áo thun, sơ mi, quần jeans, kaki và phụ kiện — mặc đẹp mỗi ngày, giá dễ chịu.</p>
+    <a class="btn camel" asp-controller="Shop" asp-action="Index">Mua sắm ngay</a>
+</section>
+<div class="cats">
+    @foreach (var d in Model.DanhMucs) { <a class="cat" asp-controller="Shop" asp-action="Index" asp-route-maDM="@d.MaDM">@d.TenDM</a> }
+</div>
+@foreach (var (tieuDe, ds, tag) in new[] { ("Sản phẩm Hot", Model.Hot, "hot"), ("Hàng mới về", Model.Moi, "moi"), ("Đang giảm giá", Model.Giam, "giam") })
+{
+    if (ds.Count == 0) { continue; }
+    <div class="section-title"><h2>@tieuDe</h2><a asp-controller="Shop" asp-action="Index" asp-route-tag="@tag">Xem tất cả →</a></div>
+    <div class="grid">@foreach (var p in ds) { @await Html.PartialAsync("_ProductCard", p) }</div>
+}

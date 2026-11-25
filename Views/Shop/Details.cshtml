@@ -1,0 +1,63 @@
+@model ProductDetailVm
+@{
+    var sp = Model.SP;
+    ViewData["Title"] = sp.TenSP;
+    var anhs = sp.Anhs.OrderBy(a => a.ThuTu).ToList();
+    var chinh = sp.AnhDaiDien ?? anhs.FirstOrDefault()?.DuongDan;
+    var anhMau = anhs.Where(a => a.MaMau != null).GroupBy(a => a.MaMau!.Value).ToDictionary(g => g.Key, g => g.First().DuongDan);
+    var json = System.Text.Json.JsonSerializer.Serialize(sp.BienThes.Select(b => new { mau = b.MaMau, size = b.MaSize, ton = b.SoLuongTon }));
+}
+<p class="muted small mt"><a asp-controller="Home" asp-action="Index">Trang chủ</a> / <a asp-controller="Shop" asp-action="Index" asp-route-maDM="@sp.MaDM">@sp.DanhMuc?.TenDM</a> / @sp.TenSP</p>
+<div class="detail">
+    <div class="gallery">
+        <div class="big" id="big-img">@await Html.PartialAsync("_Thumb", (chinh, sp.TenSP))</div>
+        @if (anhs.Count > 1)
+        { <div class="thumbs">@foreach (var a in anhs) { <button type="button" data-src="@a.DuongDan"><img src="@a.DuongDan" alt=""></button> }</div> }
+    </div>
+    <div>
+        <h1>@sp.TenSP</h1>
+        <div class="stars">@(Model.SaoTB > 0 ? string.Concat(Enumerable.Repeat("★", (int)Math.Round(Model.SaoTB))) + string.Concat(Enumerable.Repeat("☆", 5 - (int)Math.Round(Model.SaoTB))) : "")
+            <span class="muted small">@(sp.DanhGias.Count > 0 ? $"{Model.SaoTB}/5 ({sp.DanhGias.Count} đánh giá)" : "Chưa có đánh giá")</span></div>
+        <div class="price-big">@Fmt.Money(sp.GiaBan)@if (sp.PhanTramGiam > 0) { <span class="old-price">@Fmt.Money(sp.GiaGoc)</span> <span class="badge sale">-@sp.PhanTramGiam%</span> }</div>
+        <p>@sp.MoTa</p>
+        @if (sp.TrangThai != Const.SP_BAN) { <div class="flash error">Sản phẩm đã ngừng bán.</div> }
+        else
+        {
+            <form asp-controller="Cart" asp-action="Add" method="post" id="add-form">
+                <input type="hidden" name="maSP" value="@sp.MaSP">
+                <label>Màu sắc</label>
+                <div class="opt">@foreach (var m in Model.Maus) { <label><input type="radio" name="maMau" value="@m.MaMau" data-img="@anhMau.GetValueOrDefault(m.MaMau)" required><span class="swatch"><i class="dot" style="background:@m.MaHex"></i>@m.TenMau</span></label> }</div>
+                <label>Size</label>
+                <div class="opt">@foreach (var s in Model.Sizes) { <label><input type="radio" name="maSize" value="@s.MaSize" required><span class="chip">@s.TenSize</span></label> }</div>
+                <p class="muted small" id="stock-info">Chọn đủ màu và size để xem tồn kho</p>
+                <label>Số lượng</label>
+                <div class="qty"><button type="button" data-d="-1">−</button><input name="soLuong" type="number" value="1" min="1"><button type="button" data-d="1">+</button></div>
+                <div class="row mt">
+                    <button class="btn camel" type="submit">Thêm vào giỏ</button>
+                    <button class="btn" type="submit" name="muaNgay" value="true">Mua ngay</button>
+                </div>
+            </form>
+            <script type="application/json" id="variants-json">@Html.Raw(json)</script>
+        }
+        <div class="policy">Đổi trả trong @Const.RETURN_DAYS ngày · Miễn phí vận chuyển cho đơn từ @Fmt.Money(Const.FREE_SHIP_FROM)</div>
+    </div>
+</div>
+
+<h2>Đánh giá từ khách hàng</h2>
+@if (Model.DuocDanhGia)
+{
+    <form asp-action="Review" asp-route-id="@sp.MaSP" method="post" class="card mb">
+        <label>Số sao</label><select name="soSao" style="width:auto"><option value="5">5 sao</option><option value="4">4 sao</option><option value="3">3 sao</option><option value="2">2 sao</option><option value="1">1 sao</option></select>
+        <label>Nhận xét</label><textarea name="noiDung" rows="2" maxlength="500"></textarea>
+        <button class="btn mt" type="submit">Gửi đánh giá</button>
+    </form>
+}
+@if (sp.DanhGias.Count == 0) { <p class="muted">Chưa có đánh giá nào.</p> }
+@foreach (var d in sp.DanhGias.OrderByDescending(x => x.NgayDG))
+{ <div class="card mb"><b>@d.TaiKhoan?.HoTen</b> <span class="stars">@string.Concat(Enumerable.Repeat("★", d.SoSao))</span> <span class="muted small">@Fmt.Date(d.NgayDG)</span><p style="margin:6px 0 0">@d.NoiDung</p></div> }
+
+@if (Model.LienQuan.Count > 0)
+{
+    <div class="section-title"><h2>Sản phẩm liên quan</h2></div>
+    <div class="grid">@foreach (var p in Model.LienQuan) { @await Html.PartialAsync("_ProductCard", p) }</div>
+}

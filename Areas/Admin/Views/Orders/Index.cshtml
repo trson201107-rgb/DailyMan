@@ -1,0 +1,33 @@
+@model PagedList<DonHang>
+@{
+    ViewData["Title"] = "Đơn hàng";
+    var req = Context.Request; int? st = int.TryParse(req.Query["st"], out var s0) ? s0 : null;
+    var dem = (Dictionary<int, int>)ViewBag.Dem;
+}
+<div class="row"><h1>Đơn hàng</h1><span class="spacer"></span>
+    <a class="btn ghost" asp-action="Export" asp-all-route-data="@req.Query.ToDictionary(k => k.Key, k => k.Value.ToString())">⬇ Xuất CSV</a></div>
+<div class="tabs">
+    <a asp-action="Index" class="@(st == null ? "on" : "")">Tất cả</a>
+    @for (int i = 1; i <= 7; i++) { <a asp-action="Index" asp-route-st="@i" class="@(st == i ? "on" : "")">@Const.TEN_TRANG_THAI[i] (@dem.GetValueOrDefault(i))</a> }
+</div>
+<form method="get" class="toolbar">
+    <input type="hidden" name="st" value="@st">
+    <div><label>Tìm kiếm</label><input name="q" value="@req.Query["q"]" placeholder="Mã đơn, tên, SĐT"></div>
+    <div><label>Từ ngày</label><input type="date" name="tu" value="@req.Query["tu"]"></div>
+    <div><label>Đến ngày</label><input type="date" name="den" value="@req.Query["den"]"></div>
+    <button class="btn" type="submit">Lọc</button>
+</form>
+<div class="scroll"><table>
+    <thead><tr><th>Mã</th><th>Ngày đặt</th><th>Khách nhận</th><th>SP</th><th>Thanh toán</th><th>Tổng</th><th>Trạng thái</th><th></th></tr></thead>
+    <tbody>
+    @foreach (var d in Model.Items)
+    {
+        <tr><td><b>#@d.MaDH</b></td><td>@Fmt.DateTime(d.NgayDat)</td><td>@d.TenNguoiNhan<br><span class="muted small">@d.SDTNguoiNhan</span></td><td>@d.ChiTiets.Sum(c => c.SoLuong)</td>
+            <td>@d.ThanhToan?.PhuongThuc?.TenPT<br><span class="muted small">@d.ThanhToan?.TrangThaiTT</span></td><td><b>@Fmt.Money(d.ThanhToan?.SoTien ?? 0)</b></td>
+            <td><span class="badge st-@d.MaTrangThai">@d.TrangThai?.TenTrangThai</span></td>
+            <td><div class="actions"><a class="btn sm ghost" asp-action="Details" asp-route-id="@d.MaDH">Chi tiết</a>
+                @if (d.MaTrangThai < Const.HOAN_THANH) { <form asp-action="Advance" asp-route-id="@d.MaDH" asp-route-back="list" method="post"><button class="btn sm camel">→ @Const.TEN_TRANG_THAI[d.MaTrangThai + 1]</button></form> }</div></td></tr>
+    }
+    </tbody></table></div>
+@if (Model.Items.Count == 0) { <div class="empty mt">Không có đơn hàng phù hợp.</div> }
+@await Html.PartialAsync("_Pager", (Model.Page, Model.TotalPages))

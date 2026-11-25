@@ -1,0 +1,63 @@
+@model CheckoutVm
+@{ ViewData["Title"] = "Thanh toán"; var t = Model.Tinh; }
+<h1 class="mt">Thanh toán</h1>
+<form asp-action="Checkout" method="post" id="checkout-form" data-once>
+    @foreach (var id in Model.Selected) { <input type="hidden" name="selected" value="@id"> }
+    <div class="cols">
+        <div>
+            <div class="card mb">
+                <h3>1. Địa chỉ nhận hàng</h3>
+                <div class="addr-grid">
+                    @foreach (var d in Model.DiaChis)
+                    {
+                        <div class="addr @(d.MaDC == Model.MaDC ? "sel" : "")"><label class="pick"><input type="radio" name="maDC" value="@d.MaDC" @(d.MaDC == Model.MaDC ? "checked" : "")>
+                            <span><b>@d.TenNguoiNhan</b> · @d.SDT<br><span class="muted small">@d.DayDu</span>@if (d.MacDinh) { <br><span class="badge ok">Mặc định</span> }</span></label></div>
+                    }
+                </div>
+                <p class="small mt"><a asp-controller="Account" asp-action="AddressForm">+ Thêm địa chỉ mới</a></p>
+            </div>
+            <div class="card mb">
+                <h3>2. Phương thức thanh toán</h3>
+                @foreach (var p in Model.PhuongThucs)
+                { <label class="pay-opt"><input type="radio" name="maPT" value="@p.MaPT" @(p.MaPT == Model.MaPT ? "checked" : "")> @(p.TenPT == "COD" ? "Thanh toán khi nhận hàng (COD)" : "Chuyển khoản QR")</label> }
+            </div>
+            <div class="card mb">
+                <h3>3. Mã giảm giá</h3>
+                <div class="row">
+                    <input name="code" value="@Model.Code" placeholder="Nhập mã giảm giá" style="flex:1;text-transform:uppercase">
+                    <button class="btn" type="submit" name="act" value="apply">Áp dụng</button>
+                </div>
+                @if (t.Voucher != null) { <p class="flash success" style="margin:10px 0 0">Đang dùng <b>@t.Voucher.MaCode</b> – @t.Voucher.TenChuongTrinh (−@Fmt.Money(t.GiamVoucher))</p> }
+                @if (Model.Vouchers.Count > 0)
+                {
+                    <p class="muted small mt">Mã đang chạy – bấm vào mã để điền:</p>
+                    <div class="voucher-list">
+                    @foreach (var o in Model.Vouchers)
+                    {
+                        <div class="vcard @(o.DungDuoc ? "" : "off")" @(o.DungDuoc ? $"data-code={o.Voucher.MaCode}" : "")>
+                            <div><b>@o.Voucher.MaCode</b> <span class="badge">@Const.TenLoaiKM(o.Voucher.LoaiKM)</span><br>
+                                <span class="small">@o.Voucher.TenChuongTrinh · @(o.Voucher.LoaiGiam == Const.GIAM_PHAN_TRAM ? $"Giảm {o.Voucher.GiaTriGiam:0}%" : $"Giảm {Fmt.Money(o.Voucher.GiaTriGiam)}") · HSD @Fmt.Date(o.Voucher.NgayHetHan)</span><br>
+                                @if (o.DungDuoc) { <span class="small" style="color:var(--ok)">Dùng được: −@Fmt.Money(o.Giam)</span> } else { <span class="small muted">@o.LyDo</span> }</div>
+                        </div>
+                    }
+                    </div>
+                }
+            </div>
+            <div class="card">
+                <h3>Ghi chú</h3>
+                <textarea name="ghiChu" rows="2" maxlength="255" placeholder="Ví dụ: giao giờ hành chính">@Model.GhiChu</textarea>
+            </div>
+        </div>
+        <aside class="card">
+            <h3>Đơn hàng (@Model.Lines.Sum(l => l.SoLuong) sản phẩm)</h3>
+            @foreach (var l in Model.Lines)
+            { <div class="sum-row small"><span>@l.TenSP <span class="muted">(@l.Mau, @l.Size) ×@l.SoLuong</span></span><span>@Fmt.Money(l.ThanhTien)</span></div> }
+            <div class="sum-row"><span>Tiền hàng</span><span>@Fmt.Money(t.TienHang)</span></div>
+            <div class="sum-row"><span>Phí vận chuyển</span><span>@(t.Phi == 0 ? "Miễn phí" : Fmt.Money(t.Phi))</span></div>
+            @if (t.UuDaiHang > 0) { <div class="sum-row"><span>Ưu đãi hạng @t.TenHang (@t.PhanTramHang%)</span><span>−@Fmt.Money(t.UuDaiHang)</span></div> }
+            @if (t.GiamVoucher > 0) { <div class="sum-row"><span>Mã @t.Voucher!.MaCode</span><span>−@Fmt.Money(t.GiamVoucher)</span></div> }
+            <div class="sum-row total"><span>Tổng thanh toán</span><span>@Fmt.Money(t.Tong)</span></div>
+            <button class="btn camel block mt" type="submit" name="act" value="place">Đặt hàng</button>
+        </aside>
+    </div>
+</form>

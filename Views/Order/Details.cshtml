@@ -1,0 +1,65 @@
+@model DonHang
+@{
+    ViewData["Title"] = "Đơn hàng #" + Model.MaDH;
+    var yc = (YeuCauDoiTra?)ViewBag.DoiTra;
+    var buoc = new[] { "Đặt hàng", "Xác nhận", "Đóng gói", "Đang giao", "Hoàn thành" };
+    var xong = Model.LichSus.Where(l => l.MaTrangThai == Const.HOAN_THANH).Select(l => (DateTime?)l.ThoiGian).Min() ?? Model.NgayDat;
+    var conHanDoiTra = Model.MaTrangThai == Const.HOAN_THANH && (DateTime.Now - xong).TotalDays <= Const.RETURN_DAYS && (yc == null || yc.TrangThai == Const.DT_NO);
+}
+<h1 class="mt">Đơn hàng #@Model.MaDH <span class="badge st-@Model.MaTrangThai">@Model.TrangThai?.TenTrangThai</span></h1>
+@if (Model.MaTrangThai < Const.HUY)
+{
+    <div class="track">
+        @for (int i = 0; i < buoc.Length; i++)
+        { <div class="tk @(Model.MaTrangThai > i + 1 ? "done" : Model.MaTrangThai == i + 1 ? "now" : "")"><i>@(i + 1)</i><b>@buoc[i]</b></div> }
+    </div>
+}
+<div class="cols">
+    <div>
+        <div class="scroll"><table>
+            <thead><tr><th>Sản phẩm</th><th>Đơn giá</th><th>SL</th><th>Thành tiền</th></tr></thead>
+            <tbody>@foreach (var c in Model.ChiTiets)
+            {
+                <tr><td><div class="cell"><div class="tbl-thumb">@await Html.PartialAsync("_Thumb", (c.BienThe?.SanPham?.AnhDaiDien, c.BienThe?.SanPham?.TenSP ?? "?"))</div>
+                    <div><a asp-controller="Shop" asp-action="Details" asp-route-id="@c.BienThe?.MaSP"><b>@c.BienThe?.SanPham?.TenSP</b></a><br><span class="muted small">@c.BienThe?.MauSac?.TenMau · @c.BienThe?.KichCo?.TenSize</span></div></div></td>
+                    <td>@Fmt.Money(c.DonGia)</td><td>@c.SoLuong</td><td>@Fmt.Money(c.SoLuong * c.DonGia)</td></tr>
+            }</tbody></table></div>
+
+        <h3 class="mt">Lịch sử đơn hàng</h3>
+        <ul class="timeline">@foreach (var l in Model.LichSus.OrderBy(x => x.ThoiGian)) { <li><b>@l.TrangThai?.TenTrangThai</b> <span class="muted small">@Fmt.DateTime(l.ThoiGian)</span>@if (!string.IsNullOrEmpty(l.GhiChu)) { <br><span class="small">@l.GhiChu</span> }</li> }</ul>
+    </div>
+    <aside>
+        <div class="card mb">
+            <h3>Thanh toán</h3>
+            <div class="sum-row"><span>Tiền hàng</span><span>@Fmt.Money(Model.TienHang)</span></div>
+            <div class="sum-row"><span>Phí vận chuyển</span><span>@Fmt.Money(Model.PhiVanChuyen)</span></div>
+            @if (Model.UuDaiHang > 0) { <div class="sum-row"><span>Ưu đãi hạng thành viên</span><span>−@Fmt.Money(Model.UuDaiHang)</span></div> }
+            @if (Model.TienGiam - Model.UuDaiHang > 0) { <div class="sum-row"><span>Mã @Model.Voucher?.MaCode</span><span>−@Fmt.Money(Model.TienGiam - Model.UuDaiHang)</span></div> }
+            <div class="sum-row total"><span>Tổng</span><span>@Fmt.Money(Model.ThanhToan?.SoTien ?? Model.TongThanhToan)</span></div>
+            <p class="muted small">@Model.ThanhToan?.PhuongThuc?.TenPT · @Model.ThanhToan?.TrangThaiTT</p>
+        </div>
+        <div class="card mb"><h3>Giao đến</h3><b>@Model.TenNguoiNhan</b> · @Model.SDTNguoiNhan<br><span class="muted">@Model.DiaChiGiao</span>@if (!string.IsNullOrEmpty(Model.GhiChu)) { <p class="small">Ghi chú: @Model.GhiChu</p> }</div>
+
+        @if (Model.MaTrangThai == Const.CHO)
+        {
+            <div class="card"><h3>Hủy đơn hàng</h3>
+                <form asp-action="Cancel" asp-route-id="@Model.MaDH" method="post" data-confirm="Bạn chắc chắn muốn hủy đơn này?">
+                    <label>Lý do hủy</label>
+                    <select name="lyDo" required><option value="">-- Chọn lý do --</option>@foreach (var r in Const.LY_DO_HUY) { <option>@r</option> }</select>
+                    <label>Chi tiết (bắt buộc nếu chọn "Khác")</label><input name="ghiChu" maxlength="200">
+                    <button class="btn danger mt" type="submit">Hủy đơn</button></form></div>
+        }
+        @if (yc != null)
+        {
+            <div class="panel @(yc.TrangThai == Const.DT_OK ? "ok" : yc.TrangThai == Const.DT_NO ? "bad" : "warn")"><b>Yêu cầu đổi trả: @yc.TrangThai</b><br><span class="small">@yc.NhomLyDo – @yc.LyDo</span>@if (!string.IsNullOrEmpty(yc.LyDoTuChoi)) { <br><span class="small">Lý do từ chối: @yc.LyDoTuChoi</span> }</div>
+        }
+        @if (conHanDoiTra)
+        {
+            <div class="card mt"><h3>Yêu cầu đổi trả</h3>
+                <form asp-action="RequestReturn" asp-route-id="@Model.MaDH" method="post">
+                    <label>Lý do</label><select name="nhom" required><option value="">-- Chọn lý do --</option>@foreach (var r in Const.LY_DO_DOI_TRA) { <option>@r</option> }</select>
+                    <label>Mô tả chi tiết</label><textarea name="chiTiet" rows="2" maxlength="500" required></textarea>
+                    <button class="btn mt" type="submit">Gửi yêu cầu</button></form></div>
+        }
+    </aside>
+</div>

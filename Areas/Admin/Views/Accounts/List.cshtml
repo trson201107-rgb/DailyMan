@@ -1,0 +1,37 @@
+@model PagedList<TaiKhoan>
+@{
+    string role = ViewBag.Role; var req = Context.Request; bool isAdmin = User.IsInRole(Const.ROLE_ADMIN);
+    var hangs = (List<HangThanhVien>)ViewBag.Hangs;
+    var chiTieu = role == Const.ROLE_CUSTOMER ? (Dictionary<int, decimal>)ViewBag.ChiTieu : new Dictionary<int, decimal>();
+    string act = role == Const.ROLE_ADMIN ? "Admins" : role == Const.ROLE_STAFF ? "Staffs" : "Customers";
+    string ten = role == Const.ROLE_ADMIN ? "Tài khoản quản trị viên" : role == Const.ROLE_STAFF ? "Tài khoản nhân viên" : "Tài khoản khách hàng";
+    ViewData["Title"] = ten;
+}
+<div class="row"><h1>@ten <span class="muted small">(@Model.Total)</span></h1><span class="spacer"></span>
+    @if (isAdmin && role != Const.ROLE_CUSTOMER) { <a class="btn camel" asp-action="Form" asp-route-role="@role">+ Thêm @(role == Const.ROLE_ADMIN ? "quản trị viên" : "nhân viên")</a> }</div>
+<form method="get" class="toolbar">
+    <div><label>Tìm kiếm</label><input name="q" value="@req.Query["q"]" placeholder="Tên, email, SĐT"></div>
+    <div><label>Trạng thái</label><select name="tt"><option value="">Tất cả</option><option selected="@(req.Query["tt"] == Const.TK_HOAT_DONG)">@Const.TK_HOAT_DONG</option><option selected="@(req.Query["tt"] == Const.TK_KHOA)">@Const.TK_KHOA</option></select></div>
+    @if (role == Const.ROLE_CUSTOMER) { <div><label>Hạng</label><select name="hang"><option value="">Tất cả</option>@foreach (var h in hangs) { <option value="@h.MaHang" selected="@(req.Query["hang"] == h.MaHang.ToString())">@h.TenHang</option> }</select></div> }
+    <button class="btn" type="submit">Lọc</button>
+</form>
+<div class="scroll"><table>
+    <thead><tr><th>Họ tên</th><th>Email</th><th>SĐT</th>@if (role == Const.ROLE_CUSTOMER) { <th>Hạng</th><th>Chi tiêu</th> }<th>Ngày tạo</th><th>Trạng thái</th><th></th></tr></thead>
+    <tbody>
+    @foreach (var t in Model.Items)
+    {
+        <tr><td><b>@t.HoTen</b></td><td>@t.Email</td><td>@t.SoDienThoai</td>
+            @if (role == Const.ROLE_CUSTOMER) { <td>@(t.HangThanhVien != null ? Html.Raw($"<span class=\"badge ok\">{t.HangThanhVien.TenHang}</span>") : Html.Raw("–"))</td><td>@Fmt.Money(chiTieu.GetValueOrDefault(t.MaTK))</td> }
+            <td>@Fmt.Date(t.NgayTao)</td><td><span class="badge @(t.TrangThai == Const.TK_HOAT_DONG ? "ok" : "hidden")">@t.TrangThai</span></td>
+            <td><div class="actions">
+                @if (role == Const.ROLE_CUSTOMER) { <a class="btn sm ghost" asp-action="CustomerDetail" asp-route-id="@t.MaTK">Chi tiết</a> }
+                @if (isAdmin)
+                {
+                    @if (role != Const.ROLE_CUSTOMER) { <a class="btn sm ghost" asp-action="Form" asp-route-id="@t.MaTK">Sửa</a> }
+                    <form asp-action="ToggleLock" asp-route-id="@t.MaTK" method="post" data-confirm="@(t.TrangThai == Const.TK_HOAT_DONG ? "Khóa" : "Mở khóa") tài khoản này?"><button class="btn sm ghost">@(t.TrangThai == Const.TK_HOAT_DONG ? "Khóa" : "Mở khóa")</button></form>
+                    <form asp-action="ResetPassword" asp-route-id="@t.MaTK" method="post" class="inline-form"><input name="matKhauMoi" type="text" placeholder="Mật khẩu mới" minlength="6" style="width:120px"><button class="btn sm ghost">Đặt lại MK</button></form>
+                }</div></td></tr>
+    }
+    </tbody></table></div>
+@if (Model.Items.Count == 0) { <div class="empty mt">Không có tài khoản phù hợp.</div> }
+@await Html.PartialAsync("_Pager", (Model.Page, Model.TotalPages))

@@ -1,0 +1,61 @@
+@model SanPham
+@{
+    ViewData["Title"] = Model.TenSP; bool isAdmin = User.IsInRole(Const.ROLE_ADMIN);
+    var maus = (List<MauSac>)ViewBag.Maus; var sizes = (List<KichCo>)ViewBag.Sizes;
+    var lichSu = (List<LsTonKho>)ViewBag.LichSu; var daBan = (List<int>)ViewBag.DaBan;
+}
+<div class="row"><h1>@Model.TenSP</h1><span class="badge @(Model.TrangThai == Const.SP_BAN ? "ok" : "hidden")">@Model.TrangThai</span><span class="spacer"></span>
+    @if (isAdmin) { <a class="btn ghost" asp-action="Form" asp-route-id="@Model.MaSP">Sửa thông tin</a> }<a class="btn ghost" asp-action="Index">← Danh sách</a></div>
+<p class="muted">@Model.DanhMuc?.TenDM · @Fmt.Money(Model.GiaBan)@(Model.PhanTramGiam > 0 ? $" (giảm {Model.PhanTramGiam}%)" : "") · Tổng tồn: <b>@Model.TongTon</b></p>
+
+<h3>Phiên bản (màu + size) và tồn kho</h3>
+<div class="scroll"><table>
+    <thead><tr><th>SKU</th><th>Màu</th><th>Size</th><th>Tồn</th><th>Nhập / điều chỉnh / kiểm kê</th>@if (isAdmin) { <th></th> }</tr></thead>
+    <tbody>
+    @foreach (var b in Model.BienThes.OrderBy(x => x.MaMau).ThenBy(x => x.KichCo!.ThuTu))
+    {
+        <tr><td class="small">@b.SKU</td><td><i class="dot" style="background:@b.MauSac?.MaHex"></i> @b.MauSac?.TenMau</td><td>@b.KichCo?.TenSize</td>
+            <td>@(b.SoLuongTon == 0 ? Html.Raw("<span class=\"badge out\">0</span>") : Html.Raw($"<b>{b.SoLuongTon}</b>"))</td>
+            <td><form asp-action="AdjustStock" method="post" class="stock-form"><input type="hidden" name="maBT" value="@b.MaBT">
+                <select name="loai"><option>Nhập hàng</option><option>Điều chỉnh</option><option>Kiểm kê</option></select>
+                <input name="so" type="number" placeholder="SL" required><input name="ghiChu" placeholder="Ghi chú"><button class="btn sm">Lưu</button></form></td>
+            @if (isAdmin) { <td>@if (!daBan.Contains(b.MaBT)) { <form asp-action="DeleteVariant" method="post" data-confirm="Xóa phiên bản này?"><input type="hidden" name="maBT" value="@b.MaBT"><button class="btn sm ghost">Xóa</button></form> }</td> }</tr>
+    }
+    </tbody></table></div>
+<p class="muted small">Nhập hàng: cộng thêm · Điều chỉnh: cộng/trừ (nhập số âm để trừ) · Kiểm kê: đặt đúng bằng số đếm thực tế.</p>
+@if (isAdmin)
+{
+    <form asp-action="AddVariant" method="post" class="toolbar card" style="align-items:end">
+        <input type="hidden" name="maSP" value="@Model.MaSP"><b>Thêm phiên bản:</b>
+        <div><label>Màu</label><select name="maMau">@foreach (var m in maus) { <option value="@m.MaMau">@m.TenMau</option> }</select></div>
+        <div><label>Size</label><select name="maSize">@foreach (var s in sizes) { <option value="@s.MaSize">@s.TenSize</option> }</select></div>
+        <div><label>Tồn ban đầu</label><input name="soLuong" type="number" min="0" value="0"></div>
+        <button class="btn" type="submit">Thêm</button>
+    </form>
+}
+
+<h3 class="mt">Hình ảnh</h3>
+<div class="imgs">
+    @foreach (var a in Model.Anhs.OrderBy(x => x.ThuTu))
+    {
+        <div class="im"><div class="pic"><img src="@a.DuongDan" alt=""></div><span class="small muted">@(maus.FirstOrDefault(x => x.MaMau == a.MaMau)?.TenMau ?? "Ảnh chung")</span> @if (a.DuongDan == Model.AnhDaiDien) { <span class="badge ok">Ảnh đại diện</span> }
+            @if (isAdmin)
+            { <div class="acts">@if (a.DuongDan != Model.AnhDaiDien) { <form asp-action="MainImage" method="post"><input type="hidden" name="maAnh" value="@a.MaAnh"><button class="btn sm ghost">Làm đại diện</button></form> }
+                <form asp-action="DeleteImage" method="post" data-confirm="Xóa ảnh?"><input type="hidden" name="maAnh" value="@a.MaAnh"><button class="btn sm ghost">Xóa</button></form></div> }</div>
+    }
+</div>
+@if (isAdmin)
+{
+    <form asp-action="AddImage" method="post" enctype="multipart/form-data" class="toolbar card mt" style="align-items:end">
+        <input type="hidden" name="maSP" value="@Model.MaSP"><b>Thêm ảnh:</b>
+        <div><label>Tải tệp lên (jpg, png, webp ≤ 2MB)</label><input type="file" name="file" accept=".jpg,.jpeg,.png,.webp,.svg"></div>
+        <div><label>Ảnh của màu</label><select name="maMau"><option value="">Ảnh chung</option>@foreach (var m in maus) { <option value="@m.MaMau">@m.TenMau</option> }</select></div>
+        <div><label>hoặc đường dẫn ảnh</label><input name="url" placeholder="https://..."></div>
+        <button class="btn" type="submit">Thêm ảnh</button>
+    </form>
+}
+
+<h3 class="mt">Lịch sử tồn kho gần đây</h3>
+<div class="scroll"><table class="mini-table">
+    <thead><tr><th>Thời gian</th><th>Phiên bản</th><th>Thao tác</th><th>Thay đổi</th><th>Tồn sau</th><th>Ghi chú</th></tr></thead>
+    <tbody>@foreach (var l in lichSu) { <tr><td>@Fmt.DateTime(l.ThoiGian)</td><td>@l.BienThe?.MauSac?.TenMau – @l.BienThe?.KichCo?.TenSize</td><td>@l.LoaiThaoTac</td><td>@(l.SoLuongThayDoi > 0 ? "+" : "")@l.SoLuongThayDoi</td><td>@l.TonSau</td><td>@l.GhiChu</td></tr> }</tbody></table></div>

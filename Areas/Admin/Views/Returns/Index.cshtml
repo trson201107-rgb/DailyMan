@@ -1,0 +1,28 @@
+@model PagedList<YeuCauDoiTra>
+@{ ViewData["Title"] = "Đổi trả"; string? tt = ViewBag.Tt; var ten = (Dictionary<int, string>)ViewBag.Ten; }
+<h1>Yêu cầu đổi trả</h1>
+<div class="tabs">
+    <a asp-action="Index" class="@(tt == null ? "on" : "")">Tất cả</a>
+    <a asp-action="Index" asp-route-tt="@Const.DT_CHO" class="@(tt == Const.DT_CHO ? "on" : "")">@Const.DT_CHO</a>
+    <a asp-action="Index" asp-route-tt="@Const.DT_OK" class="@(tt == Const.DT_OK ? "on" : "")">@Const.DT_OK</a>
+    <a asp-action="Index" asp-route-tt="@Const.DT_NO" class="@(tt == Const.DT_NO ? "on" : "")">@Const.DT_NO</a>
+</div>
+<div class="scroll"><table>
+    <thead><tr><th>Đơn</th><th>Khách</th><th>Lý do</th><th>Ngày gửi</th><th>Trạng thái</th><th>Xử lý</th></tr></thead>
+    <tbody>
+    @foreach (var y in Model.Items)
+    {
+        <tr><td><a asp-controller="Orders" asp-action="Details" asp-route-id="@y.MaDH">#@y.MaDH</a></td><td>@ten.GetValueOrDefault(y.MaTK)</td>
+            <td><b>@y.NhomLyDo</b><br><span class="small muted">@y.LyDo</span></td><td>@Fmt.DateTime(y.NgayTao)</td>
+            <td><span class="badge @(y.TrangThai == Const.DT_OK ? "ok" : y.TrangThai == Const.DT_NO ? "out" : "low")">@y.TrangThai</span>@if (!string.IsNullOrEmpty(y.LyDoTuChoi)) { <br><span class="small muted">@y.LyDoTuChoi</span> }</td>
+            <td>@if (y.TrangThai == Const.DT_CHO)
+                {
+                    <div class="actions">
+                        <form asp-action="Resolve" method="post" data-confirm="Chấp nhận đổi trả đơn #@y.MaDH?"><input type="hidden" name="id" value="@y.MaYC"><input type="hidden" name="chapNhan" value="true"><button class="btn sm camel">Chấp nhận</button></form>
+                        <form asp-action="Resolve" method="post" class="inline-form"><input type="hidden" name="id" value="@y.MaYC"><input type="hidden" name="chapNhan" value="false"><input name="lyDoTuChoi" placeholder="Lý do từ chối" required style="width:150px"><button class="btn sm ghost">Từ chối</button></form>
+                    </div>
+                }</td></tr>
+    }
+    </tbody></table></div>
+@if (Model.Items.Count == 0) { <div class="empty mt">Chưa có yêu cầu nào.</div> }
+@await Html.PartialAsync("_Pager", (Model.Page, Model.TotalPages))

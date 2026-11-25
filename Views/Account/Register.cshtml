@@ -1,0 +1,14 @@
+@model RegisterVm
+@{ ViewData["Title"] = "Đăng ký"; }
+<div class="auth card">
+    <h1>Đăng ký tài khoản</h1>
+    <form asp-action="Register" method="post" data-once>
+        <label asp-for="HoTen">Họ và tên</label><input asp-for="HoTen"><span asp-validation-for="HoTen" class="field-err"></span>
+        <label asp-for="Email">Email</label><input asp-for="Email" type="email"><span asp-validation-for="Email" class="field-err"></span>
+        <label asp-for="SoDienThoai">Số điện thoại</label><input asp-for="SoDienThoai"><span asp-validation-for="SoDienThoai" class="field-err"></span>
+        <label asp-for="MatKhau">Mật khẩu</label><input asp-for="MatKhau" type="password"><span asp-validation-for="MatKhau" class="field-err"></span>
+        <label asp-for="NhapLai">Nhập lại mật khẩu</label><input asp-for="NhapLai" type="password"><span asp-validation-for="NhapLai" class="field-err"></span>
+        <button class="btn block mt" type="submit">Đăng ký</button>
+    </form>
+    <p class="center muted small mt">Đã có tài khoản? <a asp-action="Login">Đăng nhập</a></p>
+</div>

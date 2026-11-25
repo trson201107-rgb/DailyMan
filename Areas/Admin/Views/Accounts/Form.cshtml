@@ -1,0 +1,15 @@
+@model AccountFormVm
+@{ ViewData["Title"] = Model.MaTK == 0 ? "Thêm tài khoản" : "Sửa tài khoản"; }
+<h1>@ViewData["Title"]</h1>
+<div class="card" style="max-width:560px">
+    <form asp-action="Form" method="post" data-once>
+        <input type="hidden" asp-for="MaTK">
+        <div asp-validation-summary="ModelOnly" class="errors"></div>
+        <label asp-for="Role">Vai trò</label><select asp-for="Role"><option value="@Const.ROLE_STAFF">Nhân viên</option><option value="@Const.ROLE_ADMIN">Quản trị viên</option></select><span asp-validation-for="Role" class="field-err"></span>
+        <label asp-for="HoTen">Họ và tên</label><input asp-for="HoTen"><span asp-validation-for="HoTen" class="field-err"></span>
+        <label asp-for="Email">Email</label><input asp-for="Email" type="email"><span asp-validation-for="Email" class="field-err"></span>
+        <label asp-for="SoDienThoai">Số điện thoại</label><input asp-for="SoDienThoai"><span asp-validation-for="SoDienThoai" class="field-err"></span>
+        @if (Model.MaTK == 0) { <label asp-for="MatKhau">Mật khẩu</label><input asp-for="MatKhau" type="text"><span asp-validation-for="MatKhau" class="field-err"></span> }
+        <div class="row mt"><button class="btn camel" type="submit">Lưu</button><a class="btn ghost" asp-action="Index">Hủy</a></div>
+    </form>
+</div>

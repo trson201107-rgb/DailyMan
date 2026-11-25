@@ -1,0 +1,26 @@
+@* Biểu đồ tròn (conic-gradient). Model: danh sách điểm *@
+@model IReadOnlyList<ChartPoint>
+@{
+    string[] mau = { "#B8864B", "#1B1B1B", "#2F6FDE", "#2E7D5B", "#C0392B", "#8E6CC9", "#D9951A", "#6b7f8e" };
+    var tong = Model.Sum(p => p.Value);
+    var parts = new List<string>(); decimal acc = 0; int i = 0;
+    foreach (var p in Model)
+    {
+        var c = p.Hex ?? mau[i % mau.Length];
+        var a = tong == 0 ? 0 : acc / tong * 360; acc += p.Value; var b = tong == 0 ? 0 : acc / tong * 360;
+        parts.Add($"{c} {a:0.##}deg {b:0.##}deg"); i++;
+    }
+}
+@if (tong == 0) { <p class="muted center" style="padding:20px 0">Chưa có dữ liệu.</p> }
+else
+{
+    <div class="donut-wrap">
+        <div class="donut" style="background:conic-gradient(@string.Join(",", parts))"><span>@tong.ToString("0")</span></div>
+        <ul class="legend">
+            @{ i = 0; }
+            @foreach (var p in Model)
+            { <li><i class="dot" style="background:@(p.Hex ?? mau[i % mau.Length])"></i> @p.Label — <b>@p.Value.ToString("0")</b> <span class="muted small">(@(p.Value * 100 / tong < 1 ? "<1" : (p.Value * 100 / tong).ToString("0"))%)</span></li>
+               i++; }
+        </ul>
+    </div>
+}

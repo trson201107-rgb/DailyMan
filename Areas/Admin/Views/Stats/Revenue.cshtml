@@ -1,0 +1,17 @@
+@model DoanhThuVm
+@{ ViewData["Title"] = "Thống kê doanh thu"; }
+<h1>💰 Thống kê doanh thu</h1>
+@await Html.PartialAsync("_RangeForm", Model.R)
+<div class="stats">
+    <div class="stat"><div class="v">@Fmt.Money(Model.DoanhThu)</div><div class="l">Doanh thu (đơn hoàn thành)</div></div>
+    <div class="stat"><div class="v">@Model.SoDon</div><div class="l">Số đơn hoàn thành</div></div>
+    <div class="stat"><div class="v">@Fmt.Money(Model.TrungBinhDon)</div><div class="l">Giá trị trung bình mỗi đơn</div></div>
+    <div class="stat"><div class="v">@Fmt.Money(Model.TongGiam)</div><div class="l">Tổng tiền đã giảm cho khách</div></div>
+    <div class="stat"><div class="v">@Fmt.Money(Model.DoanhThuDangCho)</div><div class="l">Dự kiến từ đơn đang xử lý</div></div>
+</div>
+<div class="card mb"><h3>Doanh thu theo ngày</h3>@await Html.PartialAsync("_ColChart", ((IReadOnlyList<ChartPoint>)Model.TheoNgay, true))</div>
+<div class="grid2">
+    <div class="card"><h3>Doanh thu 6 tháng gần nhất</h3>@await Html.PartialAsync("_ColChart", ((IReadOnlyList<ChartPoint>)Model.TheoThang, true))</div>
+    <div class="card"><h3>Theo phương thức thanh toán</h3>@await Html.PartialAsync("_HBar", ((IReadOnlyList<ChartPoint>)Model.TheoThanhToan, true))</div>
+</div>
+<div class="card mt"><h3>Doanh thu theo danh mục sản phẩm</h3>@await Html.PartialAsync("_HBar", ((IReadOnlyList<ChartPoint>)Model.TheoDanhMuc, true))</div>

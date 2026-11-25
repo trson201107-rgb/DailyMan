@@ -1,0 +1,23 @@
+# Chạy:  docker compose up --build      Mở:  http://localhost:8080
+# Dừng:  docker compose down            Xóa luôn dữ liệu: docker compose down -v
+services:
+  db:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_SA_PASSWORD: "DailyMan@2026"
+    volumes:
+      - dailyman-sql:/var/opt/mssql
+  web:
+    build: .
+    depends_on:
+      - db
+    environment:
+      ConnectionStrings__DailyMan: "Server=db;Database=DailyManDb;User Id=sa;Password=DailyMan@2026;TrustServerCertificate=True;"
+    ports:
+      - "8080:8080"
+    volumes:
+      - dailyman-uploads:/app/wwwroot/uploads
+volumes:
+  dailyman-sql:
+  dailyman-uploads:

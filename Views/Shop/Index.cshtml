@@ -1,0 +1,64 @@
+@model ShopIndexVm
+@{
+    ViewData["Title"] = "Cửa hàng";
+    var f = Model.F; var req = Context.Request;
+    string Sel(int id, int[]? arr) => arr != null && arr.Contains(id) ? "checked" : "";
+}
+<div class="shop">
+    <aside class="filters card">
+        <form method="get" asp-action="Index">
+            @if (!string.IsNullOrEmpty(f.Q)) { <input type="hidden" name="q" value="@f.Q"> }
+            @if (!string.IsNullOrEmpty(f.Tag)) { <input type="hidden" name="tag" value="@f.Tag"> }
+            <h3>Danh mục</h3>
+            <div class="radio-list">
+                <label><input type="radio" name="maDM" value="" @(f.MaDM == null ? "checked" : "")> Tất cả</label>
+                @foreach (var d in Model.DanhMucs) { <label><input type="radio" name="maDM" value="@d.MaDM" @(f.MaDM == d.MaDM ? "checked" : "")> @d.TenDM</label> }
+            </div>
+            <h3>Khoảng giá</h3>
+            <div class="radio-list">
+                <label><input type="radio" name="gia" value="" @(string.IsNullOrEmpty(f.Gia) ? "checked" : "")> Tất cả</label>
+                <label><input type="radio" name="gia" value="duoi300" @(f.Gia == "duoi300" ? "checked" : "")> Dưới 300.000đ</label>
+                <label><input type="radio" name="gia" value="300-500" @(f.Gia == "300-500" ? "checked" : "")> 300.000đ – 500.000đ</label>
+                <label><input type="radio" name="gia" value="tren500" @(f.Gia == "tren500" ? "checked" : "")> Trên 500.000đ</label>
+            </div>
+            <h3>Màu sắc</h3>
+            <div class="swatches">
+                @foreach (var m in Model.Maus)
+                { <label><input type="checkbox" name="maMau" value="@m.MaMau" hidden @Sel(m.MaMau, f.MaMau)><span class="swatch"><i class="dot" style="background:@m.MaHex"></i>@m.TenMau</span></label> }
+            </div>
+            <h3>Size</h3>
+            <div class="swatches">
+                @foreach (var s in Model.Sizes)
+                { <label><input type="checkbox" name="maSize" value="@s.MaSize" hidden @Sel(s.MaSize, f.MaSize)><span class="chip">@s.TenSize</span></label> }
+            </div>
+            <label class="check"><input type="checkbox" name="conHang" value="true" @(f.ConHang ? "checked" : "")> Chỉ hiện sản phẩm còn hàng</label>
+            <input type="hidden" name="sort" value="@f.Sort">
+            <button class="btn block" type="submit">Áp dụng bộ lọc</button>
+            <a class="btn ghost block mt" asp-action="Index">Xóa bộ lọc</a>
+        </form>
+    </aside>
+    <section>
+        <div class="sortbar">
+            <div><b>@Model.Items.Total</b> sản phẩm @if (!string.IsNullOrEmpty(f.Q)) { <span>cho "<b>@f.Q</b>"</span> }</div>
+            <form method="get" asp-action="Index">
+                @foreach (var kv in req.Query.Where(k => k.Key != "sort" && k.Key != "page")) { foreach (var v in kv.Value) { <input type="hidden" name="@kv.Key" value="@v"> } }
+                <select name="sort" data-autosubmit>
+                    <option value="moi" selected="@(f.Sort is null or "moi")">Mới nhất</option>
+                    <option value="hot" selected="@(f.Sort == "hot")">Xem nhiều nhất</option>
+                    <option value="giatang" selected="@(f.Sort == "giatang")">Giá tăng dần</option>
+                    <option value="giagiam" selected="@(f.Sort == "giagiam")">Giá giảm dần</option>
+                </select>
+            </form>
+        </div>
+        <div class="active-filters">
+            @if (!string.IsNullOrEmpty(f.Tag)) { <a href="@PagerHelper.Without(req, "tag")">@(f.Tag == "hot" ? "Hot" : f.Tag == "moi" ? "Hàng mới" : "Giảm giá") <b>×</b></a> }
+            @if (!string.IsNullOrEmpty(f.Gia)) { <a href="@PagerHelper.Without(req, "gia")">Giá: @f.Gia <b>×</b></a> }
+            @if (f.ConHang) { <a href="@PagerHelper.Without(req, "conHang")">Còn hàng <b>×</b></a> }
+        </div>
+        @if (Model.Items.Items.Count == 0)
+        { <div class="empty"><h3>Không tìm thấy sản phẩm phù hợp</h3><p class="muted">Thử bỏ bớt bộ lọc hoặc đổi từ khóa.</p><a class="btn" asp-action="Index">Xóa bộ lọc</a></div> }
+        else
+        { <div class="grid">@foreach (var p in Model.Items.Items) { @await Html.PartialAsync("_ProductCard", p) }</div> }
+        @await Html.PartialAsync("_Pager", (Model.Items.Page, Model.Items.TotalPages))
+    </section>
+</div>

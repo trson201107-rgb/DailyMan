@@ -1,0 +1,28 @@
+@model DateRange
+@{
+    ViewData["Title"] = "Tổng quan";
+    var dt = (DoanhThuVm)ViewBag.DoanhThu; var sp = (SanPhamStatVm)ViewBag.SanPham; var tk = (TonKhoVm)ViewBag.TonKho;
+    var gan = (List<DonHang>)ViewBag.GanDay;
+}
+<h1>Tổng quan</h1>
+@await Html.PartialAsync("_RangeForm", Model)
+<div class="stats">
+    <div class="stat"><div class="v">@Fmt.Money(dt.DoanhThu)</div><div class="l">Doanh thu (đơn hoàn thành)</div></div>
+    <div class="stat"><div class="v">@dt.SoDon</div><div class="l">Đơn hoàn thành</div></div>
+    <div class="stat"><div class="v">@ViewBag.ChoXacNhan</div><div class="l">Đơn chờ xác nhận · <a asp-controller="Orders" asp-action="Index" asp-route-st="1">xem</a></div></div>
+    <div class="stat"><div class="v">@ViewBag.DoiTraCho</div><div class="l">Yêu cầu đổi trả chờ xử lý · <a asp-controller="Returns" asp-action="Index" asp-route-tt="@Const.DT_CHO">xem</a></div></div>
+    <div class="stat"><div class="v">@ViewBag.KhachMoi</div><div class="l">Khách hàng mới</div></div>
+    <div class="stat"><div class="v">@tk.SanPhamHetHang.Count</div><div class="l">Sản phẩm hết hàng · <a asp-controller="Stats" asp-action="Products">xem</a></div></div>
+</div>
+<div class="grid2">
+    <div class="card"><h3>Doanh thu theo ngày</h3>@await Html.PartialAsync("_ColChart", ((IReadOnlyList<ChartPoint>)dt.TheoNgay, true))</div>
+    <div class="card"><h3>Top bán chạy</h3>
+        @if (sp.BanChay.Count == 0) { <p class="muted">Chưa có đơn trong khoảng này.</p> }
+        <table class="mini-table">@foreach (var b in sp.BanChay.Take(5)) { <tr><td>@b.TenSP</td><td>@b.SoLuong đã bán</td><td>@Fmt.Money(b.DoanhThu)</td></tr> }</table></div>
+</div>
+<div class="grid2 mt">
+    <div class="card"><h3>Đơn hàng mới nhất</h3>
+        <table class="mini-table">@foreach (var d in gan) { <tr><td><a asp-controller="Orders" asp-action="Details" asp-route-id="@d.MaDH">#@d.MaDH</a></td><td>@d.TenNguoiNhan</td><td>@Fmt.Money(d.ThanhToan?.SoTien ?? 0)</td><td><span class="badge st-@d.MaTrangThai">@d.TrangThai?.TenTrangThai</span></td></tr> }</table></div>
+    <div class="card"><h3>Sắp hết hàng</h3>
+        <table class="mini-table">@foreach (var (s, ton) in tk.SanPhamSapHet.Take(6)) { <tr><td><a asp-controller="Products" asp-action="Details" asp-route-id="@s.MaSP">@s.TenSP</a></td><td><span class="badge low">Còn @ton</span></td></tr> }</table></div>
+</div>

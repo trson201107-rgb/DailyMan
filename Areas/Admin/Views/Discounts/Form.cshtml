@@ -1,0 +1,57 @@
+@model VoucherFormVm
+@{
+    var dms = (List<DanhMuc>)ViewBag.DanhMucs; var hangs = (List<HangThanhVien>)ViewBag.Hangs;
+    ViewData["Title"] = (Model.MaVoucher == 0 ? "Tạo mã – " : "Sửa mã – ") + Const.TenLoaiKM(Model.LoaiKM);
+}
+<h1>@ViewData["Title"]</h1>
+<div class="card" style="max-width:720px">
+    <form asp-action="Form" method="post" data-once>
+        <input type="hidden" asp-for="MaVoucher"><input type="hidden" asp-for="LoaiKM"><input type="hidden" asp-for="DaDung">
+        <div asp-validation-summary="ModelOnly" class="errors"></div>
+        <div class="field-row">
+            <div><label asp-for="MaCode">Mã giảm giá</label><input asp-for="MaCode" style="text-transform:uppercase" readonly="@(Model.DaDung)"><span asp-validation-for="MaCode" class="field-err"></span>
+                @if (Model.DaDung) { <span class="muted small">Mã đã có đơn sử dụng nên không đổi tên được.</span> }</div>
+            <div><label asp-for="TenChuongTrinh">Tên chương trình</label><input asp-for="TenChuongTrinh" placeholder="@(Model.LoaiKM == Const.KM_SU_KIEN ? "VD: Black Friday 2026" : Model.LoaiKM == Const.KM_COMBO ? "VD: Combo 2 áo thun" : "VD: Đặc quyền hạng Vàng")"><span asp-validation-for="TenChuongTrinh" class="field-err"></span></div>
+        </div>
+        <div class="field-row">
+            <div><label asp-for="LoaiGiam">Hình thức giảm</label><select asp-for="LoaiGiam"><option value="@Const.GIAM_PHAN_TRAM">Giảm theo phần trăm (%)</option><option value="@Const.GIAM_TIEN">Giảm số tiền cố định (đ)</option></select></div>
+            <div><label asp-for="GiaTriGiam">Giá trị giảm</label><input asp-for="GiaTriGiam" type="number" min="1"><span asp-validation-for="GiaTriGiam" class="field-err"></span></div>
+        </div>
+        <div class="field-row">
+            <div><label asp-for="GiamToiDa">Giảm tối đa (đ) – chỉ khi giảm theo %</label><input asp-for="GiamToiDa" type="number" min="0"></div>
+            <div><label asp-for="DonToiThieu">Giá trị đơn tối thiểu (đ)</label><input asp-for="DonToiThieu" type="number" min="0"><span asp-validation-for="DonToiThieu" class="field-err"></span></div>
+        </div>
+
+        @if (Model.LoaiKM == Const.KM_COMBO)
+        {
+            <div class="panel"><b>Điều kiện combo</b>
+                <div class="field-row">
+                    <div><label asp-for="MaDM1">Nhóm 1 – danh mục</label><select asp-for="MaDM1"><option value="">Bất kỳ danh mục</option>@foreach (var d in dms) { <option value="@d.MaDM">@d.TenDM</option> }</select></div>
+                    <div><label asp-for="SoLuong1">Số sản phẩm tối thiểu</label><input asp-for="SoLuong1" type="number" min="1"><span asp-validation-for="SoLuong1" class="field-err"></span></div>
+                </div>
+                <div class="field-row">
+                    <div><label asp-for="MaDM2">Nhóm 2 (không bắt buộc, vd áo + quần)</label><select asp-for="MaDM2"><option value="">Không có nhóm 2</option>@foreach (var d in dms) { <option value="@d.MaDM">@d.TenDM</option> }</select></div>
+                    <div><label asp-for="SoLuong2">Số sản phẩm tối thiểu nhóm 2</label><input asp-for="SoLuong2" type="number" min="1"><span asp-validation-for="SoLuong2" class="field-err"></span></div>
+                </div>
+                <p class="muted small" style="margin:8px 0 0">Mức giảm chỉ tính trên các sản phẩm thuộc nhóm đã chọn (nếu chọn danh mục), còn "bất kỳ danh mục" thì tính trên cả đơn.</p></div>
+        }
+        @if (Model.LoaiKM == Const.KM_CAP_BAC)
+        {
+            <div class="panel"><b>Điều kiện cấp bậc</b>
+                <label asp-for="MaHangToiThieu">Hạng thấp nhất được dùng mã</label>
+                <select asp-for="MaHangToiThieu"><option value="">-- Chọn hạng --</option>@foreach (var h in hangs) { <option value="@h.MaHang">@h.TenHang (chi tiêu từ @Fmt.Money(h.ChiTieuToiThieu))</option> }</select>
+                <span asp-validation-for="MaHangToiThieu" class="field-err"></span></div>
+        }
+
+        <div class="field-row">
+            <div><label asp-for="NgayBatDau">@(Model.LoaiKM == Const.KM_SU_KIEN ? "Ngày bắt đầu sự kiện" : "Ngày bắt đầu")</label><input asp-for="NgayBatDau" type="date" value="@Model.NgayBatDau.ToString("yyyy-MM-dd")"></div>
+            <div><label asp-for="NgayHetHan">@(Model.LoaiKM == Const.KM_SU_KIEN ? "Ngày kết thúc sự kiện" : "Ngày kết thúc")</label><input asp-for="NgayHetHan" type="date" value="@Model.NgayHetHan.ToString("yyyy-MM-dd")"><span asp-validation-for="NgayHetHan" class="field-err"></span></div>
+        </div>
+        <div class="field-row">
+            <div><label asp-for="SoLuotConLai">Số lượt sử dụng</label><input asp-for="SoLuotConLai" type="number" min="0"><span asp-validation-for="SoLuotConLai" class="field-err"></span></div>
+            <div><label class="check" style="margin-top:34px"><input type="checkbox" asp-for="DangBat"> Đang bật (khách dùng được)</label></div>
+        </div>
+        <div class="row mt"><button class="btn camel" type="submit">Lưu mã</button>
+            <a class="btn ghost" asp-action="@(Model.LoaiKM == Const.KM_COMBO ? "Combo" : Model.LoaiKM == Const.KM_CAP_BAC ? "Tier" : "Event")">Hủy</a></div>
+    </form>
+</div>
