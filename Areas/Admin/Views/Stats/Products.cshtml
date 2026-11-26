@@ -1,0 +1,30 @@
+@model SanPhamStatVm
+@{ ViewData["Title"] = "Sản phẩm bán chạy & hết hàng"; }
+<h1>🔥 Sản phẩm bán chạy &amp; hết hàng</h1>
+@await Html.PartialAsync("_RangeForm", Model.R)
+<div class="card"><h3>Top 10 sản phẩm bán chạy</h3>
+    @if (Model.BanChay.Count == 0) { <p class="muted">Chưa có đơn hàng trong khoảng này.</p> }
+    <div class="scroll"><table class="mini-table">
+        <thead><tr><th>#</th><th>Sản phẩm</th><th>Đã bán</th><th>Doanh thu</th><th>Tồn hiện tại</th></tr></thead>
+        <tbody>
+        @{ int i = 1; }
+        @foreach (var b in Model.BanChay)
+        {
+            <tr><td><b>@(i++)</b></td><td><div class="cell"><div class="tbl-thumb">@await Html.PartialAsync("_Thumb", (b.Anh, b.TenSP))</div><a asp-controller="Products" asp-action="Details" asp-route-id="@b.MaSP">@b.TenSP</a></div></td>
+                <td><b>@b.SoLuong</b></td><td>@Fmt.Money(b.DoanhThu)</td>
+                <td>@if (b.TonHienTai == 0) { <span class="badge out">Hết hàng</span> } else if (b.TonHienTai <= Const.LOW_STOCK) { <span class="badge low">Sắp hết · @b.TonHienTai</span> } else { <span>@b.TonHienTai</span> }</td></tr>
+        }
+        </tbody></table></div>
+    <p class="muted small">Chỉ tính đơn chưa hủy và không bị đổi trả. Sản phẩm bán chạy mà sắp hết hàng nên ưu tiên nhập thêm.</p>
+</div>
+<div class="grid2 mt">
+    <div class="card"><h3>Sản phẩm đã hết hàng (@Model.HetHang.Count)</h3>
+        @if (Model.HetHang.Count == 0) { <p class="muted">Không có sản phẩm nào hết hàng.</p> }
+        <table class="mini-table">@foreach (var (s, _) in Model.HetHang) { <tr><td><a asp-controller="Products" asp-action="Details" asp-route-id="@s.MaSP">@s.TenSP</a></td><td><span class="badge out">Hết hàng</span></td></tr> }</table></div>
+    <div class="card"><h3>Còn hàng nhưng chưa bán được trong kỳ</h3>
+        @if (Model.ChuaBan.Count == 0) { <p class="muted">Tất cả sản phẩm đều có đơn.</p> }
+        <table class="mini-table">@foreach (var s in Model.ChuaBan) { <tr><td><a asp-controller="Products" asp-action="Details" asp-route-id="@s.MaSP">@s.TenSP</a></td><td>Tồn @s.TongTon</td></tr> }</table></div>
+</div>
+<div class="card mt"><h3>Phiên bản (màu / size) hết hàng của các sản phẩm còn bán</h3>
+    <div class="scroll"><table class="mini-table"><thead><tr><th>Sản phẩm</th><th>Màu</th><th>Size</th></tr></thead>
+        <tbody>@foreach (var b in Model.BienTheHet) { <tr><td>@b.SanPham?.TenSP</td><td>@b.MauSac?.TenMau</td><td>@b.KichCo?.TenSize</td></tr> }</tbody></table></div></div>

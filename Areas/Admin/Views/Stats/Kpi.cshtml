@@ -1,0 +1,34 @@
+@model KpiVm
+@{ ViewData["Title"] = "KPI & biểu đồ"; bool isAdmin = User.IsInRole(Const.ROLE_ADMIN); }
+<h1>🎯 KPI &amp; biểu đồ – @Model.Thang</h1>
+<div class="stats">
+    <div class="stat"><div class="v">@Fmt.Money(Model.DoanhThu)</div><div class="l">Doanh thu tháng / mục tiêu @Fmt.Money(Model.MucTieuDoanhThu)</div>
+        <div class="progress"><i style="width:@Math.Min(100, (int)(Model.MucTieuDoanhThu == 0 ? 0 : Model.DoanhThu * 100 / Model.MucTieuDoanhThu))%"></i></div></div>
+    <div class="stat"><div class="v">@Model.SoDon</div><div class="l">Đơn trong tháng / mục tiêu @Model.MucTieuDon</div>
+        <div class="progress"><i style="width:@Math.Min(100, Model.MucTieuDon == 0 ? 0 : Model.SoDon * 100 / Model.MucTieuDon)%"></i></div></div>
+    <div class="stat"><div class="v">@Fmt.Money(Model.DoanhThuThangTruoc)</div><div class="l">Doanh thu tháng trước</div></div>
+</div>
+<div class="scroll"><table>
+    <thead><tr><th>Chỉ số KPI</th><th>Thực tế</th><th>Mục tiêu</th><th style="width:28%">Mức đạt</th><th>Đánh giá</th></tr></thead>
+    <tbody>
+    @foreach (var k in Model.Items)
+    {
+        <tr><td><b>@k.Ten</b>@if (k.GhiChu != null) { <br><span class="muted small">@k.GhiChu</span> }</td><td><b>@k.GiaTri</b></td><td>@k.MucTieu</td>
+            <td><div class="progress @(k.Dat ? "ok" : "bad")"><i style="width:@Math.Max(0, Math.Min(100, (int)k.PhanTram))%"></i></div><span class="small muted">@Math.Max(0, (int)k.PhanTram)%</span></td>
+            <td><span class="badge @(k.Dat ? "ok" : "out")">@(k.Dat ? "Đạt" : "Chưa đạt")</span></td></tr>
+    }
+    </tbody></table></div>
+@if (isAdmin)
+{
+    <form asp-action="SaveTargets" method="post" class="toolbar card mt">
+        <b>Đặt mục tiêu tháng:</b>
+        <div><label>Doanh thu (đ)</label><input name="mucTieuDoanhThu" type="number" min="100000" step="100000" value="@((long)Model.MucTieuDoanhThu)"></div>
+        <div><label>Số đơn</label><input name="mucTieuDon" type="number" min="1" value="@Model.MucTieuDon"></div>
+        <button class="btn" type="submit">Lưu mục tiêu</button>
+    </form>
+}
+<div class="grid2 mt">
+    <div class="card"><h3>Doanh thu 6 tháng gần nhất</h3>@await Html.PartialAsync("_ColChart", ((IReadOnlyList<ChartPoint>)Model.DoanhThu6Thang, true))</div>
+    <div class="card"><h3>Đơn hàng tháng này theo trạng thái</h3>@await Html.PartialAsync("_Donut", (IReadOnlyList<ChartPoint>)Model.TheoTrangThai)</div>
+</div>
+<div class="card mt"><h3>Số đơn (không hủy) theo tuần – 4 tuần gần nhất</h3>@await Html.PartialAsync("_ColChart", ((IReadOnlyList<ChartPoint>)Model.DonTheoTuan, false))</div>

@@ -1,0 +1,17 @@
+@* Phân trang: truyền vào (trang hiện tại, tổng số trang). Giữ nguyên các bộ lọc trên URL. *@
+@model (int Page, int TotalPages)
+@if (Model.TotalPages > 1)
+{
+    var p = Model.Page; var t = Model.TotalPages;
+    var from = Math.Max(1, p - 2); var to = Math.Min(t, p + 2);
+    <div class="pager">
+        @if (p > 1) { <a href="@PagerHelper.Url(Context.Request, p - 1)">‹</a> } else { <span class="off">‹</span> }
+        @if (from > 1) { <a href="@PagerHelper.Url(Context.Request, 1)">1</a> @if (from > 2) { <span class="off">…</span> } }
+        @for (int i = from; i <= to; i++)
+        {
+            if (i == p) { <span class="cur">@i</span> } else { <a href="@PagerHelper.Url(Context.Request, i)">@i</a> }
+        }
+        @if (to < t) { @if (to < t - 1) { <span class="off">…</span> } <a href="@PagerHelper.Url(Context.Request, t)">@t</a> }
+        @if (p < t) { <a href="@PagerHelper.Url(Context.Request, p + 1)">›</a> } else { <span class="off">›</span> }
+    </div>
+}

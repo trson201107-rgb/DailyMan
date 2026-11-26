@@ -1,0 +1,6 @@
+@* Ảnh sản phẩm; nếu chưa có ảnh thì hiện khung chữ cái đầu *@
+@model (string? Path, string Name)
+@if (!string.IsNullOrEmpty(Model.Path))
+{ <img class="thumb-img" src="@Model.Path" alt="@Model.Name" loading="lazy"> }
+else
+{ <div class="ph ph-c@(Math.Abs(Model.Name.GetHashCode()) % 6)">@(Model.Name.Length > 0 ? Model.Name[0].ToString().ToUpper() : "?")</div> }

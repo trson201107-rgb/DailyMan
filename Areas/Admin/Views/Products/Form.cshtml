@@ -1,0 +1,18 @@
+@model ProductFormVm
+@{ ViewData["Title"] = Model.MaSP == 0 ? "Thêm sản phẩm" : "Sửa sản phẩm"; var dms = (List<DanhMuc>)ViewBag.DanhMucs; }
+<h1>@ViewData["Title"]</h1>
+<div class="card" style="max-width:640px">
+    <form asp-action="Form" method="post" data-once>
+        <input type="hidden" asp-for="MaSP">
+        <div asp-validation-summary="ModelOnly" class="errors"></div>
+        <label asp-for="TenSP">Tên sản phẩm</label><input asp-for="TenSP"><span asp-validation-for="TenSP" class="field-err"></span>
+        <label asp-for="MaDM">Danh mục</label><select asp-for="MaDM">@foreach (var d in dms) { <option value="@d.MaDM">@d.TenDM</option> }</select>
+        <div class="field-row">
+            <div><label asp-for="GiaBan">Giá bán (đ)</label><input asp-for="GiaBan" type="number" min="1"><span asp-validation-for="GiaBan" class="field-err"></span></div>
+            <div><label asp-for="GiaGoc">Giá gốc (đ) – để trống nếu không giảm giá</label><input asp-for="GiaGoc" type="number" min="0"><span asp-validation-for="GiaGoc" class="field-err"></span></div>
+        </div>
+        <label asp-for="MoTa">Mô tả</label><textarea asp-for="MoTa" rows="3"></textarea>
+        <label asp-for="TrangThai">Trạng thái</label><select asp-for="TrangThai"><option>@Const.SP_BAN</option><option>@Const.SP_AN</option></select>
+        <div class="row mt"><button class="btn camel" type="submit">Lưu</button><a class="btn ghost" asp-action="Index">Hủy</a></div>
+    </form>
+</div>

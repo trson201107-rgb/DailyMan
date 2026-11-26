@@ -1,0 +1,17 @@
+@model AddressVm
+@{ ViewData["Title"] = Model.MaDC == 0 ? "Thêm địa chỉ" : "Sửa địa chỉ"; }
+<div class="auth card">
+    <h1>@ViewData["Title"]</h1>
+    <form asp-action="AddressForm" method="post" data-once>
+        <input type="hidden" asp-for="MaDC">
+        <label asp-for="TenNguoiNhan">Tên người nhận</label><input asp-for="TenNguoiNhan"><span asp-validation-for="TenNguoiNhan" class="field-err"></span>
+        <label asp-for="SDT">Số điện thoại</label><input asp-for="SDT"><span asp-validation-for="SDT" class="field-err"></span>
+        <div class="field-row">
+            <div><label asp-for="TinhThanh">Tỉnh / thành phố</label><input asp-for="TinhThanh"><span asp-validation-for="TinhThanh" class="field-err"></span></div>
+            <div><label asp-for="QuanHuyen">Quận / huyện</label><input asp-for="QuanHuyen"><span asp-validation-for="QuanHuyen" class="field-err"></span></div>
+        </div>
+        <label asp-for="DiaChiCuThe">Địa chỉ cụ thể</label><input asp-for="DiaChiCuThe"><span asp-validation-for="DiaChiCuThe" class="field-err"></span>
+        <label class="check"><input type="checkbox" asp-for="MacDinh"> Đặt làm địa chỉ mặc định</label>
+        <button class="btn block" type="submit">Lưu địa chỉ</button>
+    </form>
+</div>

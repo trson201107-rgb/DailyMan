@@ -1,0 +1,22 @@
+@* Biểu đồ cột (thuần CSS, không cần thư viện JS). Model: (danh sách điểm, có phải tiền không) *@
+@model (IReadOnlyList<ChartPoint> Points, bool Money)
+@{
+    var pts = Model.Points;
+    var max = pts.Count == 0 ? 1 : Math.Max(1, pts.Max(p => p.Value));
+    string Nhan(decimal v) => Model.Money ? Fmt.Short(v) : ((long)v).ToString();
+}
+@if (pts.Count == 0 || pts.All(p => p.Value == 0)) { <p class="muted center" style="padding:30px 0">Chưa có dữ liệu trong khoảng này.</p> }
+else
+{
+    <div class="bars wide">
+        @foreach (var p in pts)
+        {
+            var h = (int)Math.Round((double)(p.Value / max) * 100);
+            <div class="bar" title="@p.Label: @(Model.Money ? Fmt.Money(p.Value) : p.Value.ToString("0"))">
+                <span class="val">@(p.Value > 0 ? Nhan(p.Value) : "")</span>
+                <i style="--h:@(Math.Max(p.Value > 0 ? 2 : 0, h))@(p.Hex != null ? ";background:" + p.Hex : "")"></i>
+                <span class="lbl">@p.Label</span>
+            </div>
+        }
+    </div>
+}

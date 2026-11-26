@@ -1,0 +1,16 @@
+@model List<DanhMuc>
+@{ ViewData["Title"] = "Danh mục"; var dem = (Dictionary<int, int>)ViewBag.Dem; }
+<h1>Danh mục sản phẩm</h1>
+<div class="scroll"><table>
+    <thead><tr><th>Mã</th><th>Tên danh mục</th><th>Mô tả</th><th>Số SP</th><th></th></tr></thead>
+    <tbody>
+    @foreach (var d in Model)
+    {
+        <tr>
+            <td>@d.MaDM</td><td><input form="f@(d.MaDM)" name="tenDM" value="@d.TenDM" required></td><td><input form="f@(d.MaDM)" name="moTa" value="@d.MoTa"></td><td>@dem.GetValueOrDefault(d.MaDM)</td>
+            <td><div class="actions"><form id="f@(d.MaDM)" asp-action="Save" method="post"><input type="hidden" name="maDM" value="@d.MaDM"><button class="btn sm">Lưu</button></form>
+                <form asp-action="Delete" asp-route-id="@d.MaDM" method="post" data-confirm="Xóa danh mục?"><button class="btn sm ghost">Xóa</button></form></div></td></tr>
+    }
+    <tr><td>Mới</td><td><input form="fnew" name="tenDM" placeholder="Tên danh mục" required></td><td><input form="fnew" name="moTa" placeholder="Mô tả"></td><td></td>
+        <td><form id="fnew" asp-action="Save" method="post"><input type="hidden" name="maDM" value="0"><button class="btn sm camel">+ Thêm</button></form></td></tr>
+    </tbody></table></div>

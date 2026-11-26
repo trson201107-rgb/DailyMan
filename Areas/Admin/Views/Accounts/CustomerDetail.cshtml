@@ -1,0 +1,14 @@
+@model TaiKhoan
+@{ ViewData["Title"] = Model.HoTen; var dons = (List<DonHang>)ViewBag.Dons; var dcs = (List<DiaChi>)ViewBag.DiaChis; }
+<div class="row"><h1>@Model.HoTen</h1><span class="badge @(Model.TrangThai == Const.TK_HOAT_DONG ? "ok" : "hidden")">@Model.TrangThai</span><span class="spacer"></span><a class="btn ghost" asp-action="Customers">← Danh sách khách hàng</a></div>
+<div class="stats">
+    <div class="stat"><div class="v">@(Model.HangThanhVien?.TenHang ?? "–")</div><div class="l">Hạng thành viên (ưu đãi @(Model.HangThanhVien?.PhanTramUuDai ?? 0)%)</div></div>
+    <div class="stat"><div class="v">@Fmt.Money((decimal)ViewBag.ChiTieu)</div><div class="l">Tổng chi tiêu (đơn hoàn thành)</div></div>
+    <div class="stat"><div class="v">@dons.Count</div><div class="l">Đơn hàng gần đây</div></div>
+</div>
+<p>@Model.Email · @Model.SoDienThoai · Tham gia @Fmt.Date(Model.NgayTao)</p>
+<h3>Địa chỉ</h3>
+<ul>@foreach (var d in dcs) { <li>@d.TenNguoiNhan – @d.DayDu @(d.MacDinh ? "(mặc định)" : "")</li> }</ul>
+<h3>Đơn hàng</h3>
+<div class="scroll"><table class="mini-table"><thead><tr><th>Mã</th><th>Ngày</th><th>Tổng</th><th>Trạng thái</th></tr></thead>
+    <tbody>@foreach (var d in dons) { <tr><td><a asp-controller="Orders" asp-action="Details" asp-route-id="@d.MaDH">#@d.MaDH</a></td><td>@Fmt.DateTime(d.NgayDat)</td><td>@Fmt.Money(d.ThanhToan?.SoTien ?? 0)</td><td><span class="badge st-@d.MaTrangThai">@d.TrangThai?.TenTrangThai</span></td></tr> }</tbody></table></div>

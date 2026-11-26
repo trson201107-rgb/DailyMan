@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>DailyMan</RootNamespace>
+    <!-- Không tạo file .exe: một số máy Windows (Smart App Control / Application Control) chặn .exe chưa ký.
+         Khi tắt, Visual Studio chạy web bằng DailyMan.Web.dll qua dotnet.exe nên không bị chặn. -->
+    <UseAppHost>false</UseAppHost>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Entity Framework Core cho SQL Server (Tuần 5: Entity Framework in ASP.NET) -->
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="10.0.0" />
+    <!-- PostgreSQL (dùng khi deploy lên Render) -->
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.0" />
+    <!-- Nâng gói phụ thuộc có cảnh báo bảo mật NU1902/NU1903 (System.Security.Cryptography.Pkcs 9.0.4) -->
+    <PackageReference Include="System.Security.Cryptography.Pkcs" Version="10.0.0" />
+  </ItemGroup>
+
+</Project>

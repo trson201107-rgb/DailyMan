@@ -1,0 +1,12 @@
+@model SizeMauVm
+@{ ViewData["Title"] = "Bán chạy theo size, màu"; }
+<h1>🎨 Bán chạy theo size &amp; màu</h1>
+@await Html.PartialAsync("_RangeForm", Model.R)
+<div class="stats"><div class="stat"><div class="v">@Model.TongSoLuong</div><div class="l">Tổng số sản phẩm đã bán trong kỳ</div></div>
+    <div class="stat"><div class="v">@(Model.TheoSize.OrderByDescending(p => p.Value).FirstOrDefault()?.Label ?? "–")</div><div class="l">Size bán chạy nhất</div></div>
+    <div class="stat"><div class="v">@(Model.TheoMau.FirstOrDefault()?.Label ?? "–")</div><div class="l">Màu bán chạy nhất</div></div></div>
+<div class="grid2">
+    <div class="card"><h3>Số lượng bán theo size</h3>@await Html.PartialAsync("_ColChart", ((IReadOnlyList<ChartPoint>)Model.TheoSize, false))</div>
+    <div class="card"><h3>Số lượng bán theo màu</h3>@await Html.PartialAsync("_HBar", ((IReadOnlyList<ChartPoint>)Model.TheoMau, false))</div>
+</div>
+<div class="card mt"><h3>Top 8 kết hợp màu – size bán chạy</h3>@await Html.PartialAsync("_HBar", ((IReadOnlyList<ChartPoint>)Model.TopKetHop, false))</div>

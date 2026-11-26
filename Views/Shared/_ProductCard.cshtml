@@ -1,0 +1,16 @@
+@model SanPham
+@{ var het = Model.TongTon < 1; }
+<article class="pcard @(het ? "soldout" : "")">
+    <div class="tags">
+        @if (Model.PhanTramGiam > 0) { <span class="badge sale">-@Model.PhanTramGiam%</span> }
+        @if (Model.LaHot) { <span class="badge hot">Hot</span> }
+        @if (Model.LaMoi) { <span class="badge new">Mới</span> }
+        @if (het) { <span class="badge out">Hết hàng</span> }
+    </div>
+    <a class="thumb" asp-controller="Shop" asp-action="Details" asp-route-id="@Model.MaSP">@await Html.PartialAsync("_Thumb", (Model.AnhDaiDien, Model.TenSP))</a>
+    <div class="info">
+        <span class="muted small">@Model.DanhMuc?.TenDM</span>
+        <a class="name" asp-controller="Shop" asp-action="Details" asp-route-id="@Model.MaSP">@Model.TenSP</a>
+        <span class="price">@Fmt.Money(Model.GiaBan)</span>@if (Model.PhanTramGiam > 0) { <span class="old-price">@Fmt.Money(Model.GiaGoc)</span> }
+    </div>
+</article>

@@ -1,0 +1,14 @@
+@* Bộ chọn khoảng ngày dùng chung cho các trang thống kê *@
+@model DateRange
+<form method="get" class="range-form">
+    <div class="tabs" style="margin:0">
+        <a href="?preset=7" class="@(Model.Preset == "7" ? "on" : "")">7 ngày</a>
+        <a href="?preset=30" class="@(Model.Preset == "30" ? "on" : "")">30 ngày</a>
+        <a href="?preset=90" class="@(Model.Preset == "90" ? "on" : "")">90 ngày</a>
+        <a href="?preset=thang" class="@(Model.Preset == "thang" ? "on" : "")">Tháng này</a>
+    </div>
+    <div><label style="margin-top:0">Từ ngày</label><input type="date" name="tu" value="@Model.From.ToString("yyyy-MM-dd")"></div>
+    <div><label style="margin-top:0">Đến ngày</label><input type="date" name="den" value="@Model.To.ToString("yyyy-MM-dd")"></div>
+    <button class="btn" type="submit">Xem</button>
+</form>
+<p class="muted small">Khoảng thời gian: <b>@Fmt.Date(Model.From)</b> – <b>@Fmt.Date(Model.To)</b> (@Model.Days ngày)</p>

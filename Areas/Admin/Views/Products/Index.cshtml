@@ -1,0 +1,35 @@
+@model PagedList<SanPham>
+@{
+    ViewData["Title"] = "Sản phẩm & tồn kho"; var req = Context.Request; bool isAdmin = User.IsInRole(Const.ROLE_ADMIN);
+    var dms = (List<DanhMuc>)ViewBag.DanhMucs;
+}
+<div class="row"><h1>Sản phẩm &amp; tồn kho <span class="muted small">(@Model.Total sản phẩm)</span></h1><span class="spacer"></span>
+    @if (isAdmin) { <a class="btn camel" asp-action="Form">+ Thêm sản phẩm</a> }</div>
+<form method="get" class="toolbar">
+    <div><label>Tìm kiếm</label><input name="q" value="@req.Query["q"]" placeholder="Tên sản phẩm"></div>
+    <div><label>Danh mục</label><select name="maDM"><option value="">Tất cả</option>@foreach (var d in dms) { <option value="@d.MaDM" selected="@(req.Query["maDM"] == d.MaDM.ToString())">@d.TenDM</option> }</select></div>
+    <div><label>Trạng thái</label><select name="tt"><option value="">Tất cả</option><option selected="@(req.Query["tt"] == Const.SP_BAN)">@Const.SP_BAN</option><option selected="@(req.Query["tt"] == Const.SP_AN)">@Const.SP_AN</option></select></div>
+    <div><label>Tồn kho</label><select name="ton"><option value="">Tất cả</option><option value="con" selected="@(req.Query["ton"] == "con")">Còn nhiều</option><option value="sap" selected="@(req.Query["ton"] == "sap")">Sắp hết (≤ @Const.LOW_STOCK)</option><option value="het" selected="@(req.Query["ton"] == "het")">Hết hàng</option></select></div>
+    <div><label>Sắp xếp</label><select name="sort"><option value="">Mới nhất</option><option value="tonit" selected="@(req.Query["sort"] == "tonit")">Tồn ít nhất</option><option value="gia" selected="@(req.Query["sort"] == "gia")">Giá tăng dần</option><option value="ten" selected="@(req.Query["sort"] == "ten")">Tên A–Z</option></select></div>
+    <button class="btn" type="submit">Lọc</button>
+</form>
+<div class="scroll"><table>
+    <thead><tr><th>Sản phẩm</th><th>Danh mục</th><th>Giá bán</th><th>Tồn kho</th><th>Trạng thái</th><th></th></tr></thead>
+    <tbody>
+    @foreach (var s in Model.Items)
+    {
+        <tr><td><div class="cell"><div class="tbl-thumb">@await Html.PartialAsync("_Thumb", (s.AnhDaiDien, s.TenSP))</div><div><a asp-action="Details" asp-route-id="@s.MaSP"><b>@s.TenSP</b></a><br><span class="muted small">@s.BienThes.Count phiên bản</span></div></div></td>
+            <td>@s.DanhMuc?.TenDM</td><td>@Fmt.Money(s.GiaBan)@if (s.PhanTramGiam > 0) { <br><span class="old-price" style="margin:0">@Fmt.Money(s.GiaGoc)</span> }</td>
+            <td>@(s.TongTon < 1 ? Html.Raw("<span class=\"badge out\">Hết hàng</span>") : s.TongTon <= Const.LOW_STOCK ? Html.Raw($"<span class=\"badge low\">Sắp hết · {s.TongTon}</span>") : Html.Raw($"<span class=\"badge ok\">{s.TongTon}</span>"))</td>
+            <td><span class="badge @(s.TrangThai == Const.SP_BAN ? "ok" : "hidden")">@s.TrangThai</span></td>
+            <td><div class="actions"><a class="btn sm ghost" asp-action="Details" asp-route-id="@s.MaSP">Tồn kho</a>
+                @if (isAdmin)
+                {
+                    <a class="btn sm ghost" asp-action="Form" asp-route-id="@s.MaSP">Sửa</a>
+                    <form asp-action="Toggle" asp-route-id="@s.MaSP" method="post"><button class="btn sm ghost">@(s.TrangThai == Const.SP_BAN ? "Ẩn" : "Hiện")</button></form>
+                    <form asp-action="Delete" asp-route-id="@s.MaSP" method="post" data-confirm="Xóa sản phẩm &quot;@s.TenSP&quot;?"><button class="btn sm ghost">Xóa</button></form>
+                }</div></td></tr>
+    }
+    </tbody></table></div>
+@if (Model.Items.Count == 0) { <div class="empty mt">Không có sản phẩm phù hợp.</div> }
+@await Html.PartialAsync("_Pager", (Model.Page, Model.TotalPages))

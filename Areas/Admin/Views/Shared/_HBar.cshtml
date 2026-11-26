@@ -1,0 +1,16 @@
+@* Biểu đồ thanh ngang. Model: (điểm, có phải tiền không) *@
+@model (IReadOnlyList<ChartPoint> Points, bool Money)
+@{
+    var pts = Model.Points;
+    var max = pts.Count == 0 ? 1 : Math.Max(1, pts.Max(p => p.Value));
+    var tong = pts.Sum(p => p.Value);
+}
+@if (pts.Count == 0) { <p class="muted center" style="padding:20px 0">Chưa có dữ liệu.</p> }
+@foreach (var p in pts)
+{
+    <div class="hbar">
+        <div class="hl">@if (p.Hex != null) { <i class="dot" style="background:@p.Hex"></i> } @p.Label</div>
+        <div class="ht"><i style="width:@((int)Math.Round((double)(p.Value / max) * 100))%@(p.Hex != null ? ";background:" + p.Hex : "")"></i></div>
+        <div class="hv">@(Model.Money ? Fmt.Money(p.Value) : p.Value.ToString("0"))<span class="muted small"> @(tong > 0 ? $"({p.Value * 100 / tong:0}%)" : "")</span></div>
+    </div>
+}

@@ -1,0 +1,21 @@
+@model HoanHuyVm
+@{ ViewData["Title"] = "Tỷ lệ hoàn / hủy đơn"; var top = Model.LyDoHuy.FirstOrDefault(); var topDT = Model.LyDoDoiTra.FirstOrDefault(); }
+<h1>↩️ Tỷ lệ hoàn &amp; hủy đơn</h1>
+@await Html.PartialAsync("_RangeForm", Model.R)
+<div class="stats">
+    <div class="stat"><div class="v">@Model.TongDon</div><div class="l">Tổng đơn trong kỳ</div></div>
+    <div class="stat"><div class="v" style="color:var(--bad)">@Fmt.Pct(Model.TyLeHuy)</div><div class="l">Tỷ lệ hủy đơn (@Model.DonHuy / @Model.TongDon đơn)</div></div>
+    <div class="stat"><div class="v" style="color:var(--bad)">@Fmt.Money(Model.TienMatDoHuy)</div><div class="l">Giá trị đơn bị hủy</div></div>
+    <div class="stat"><div class="v" style="color:#6b3a91">@Fmt.Pct(Model.TyLeHoan)</div><div class="l">Tỷ lệ hoàn / đổi trả (@Model.DonDoiTra / @Model.DonDaGiao đơn đã giao)</div></div>
+    <div class="stat"><div class="v">@Model.YeuCauDoiTra</div><div class="l">Yêu cầu đổi trả đã gửi</div></div>
+</div>
+@if (top != null)
+{
+    <div class="panel warn"><b>Lý do hủy đơn nhiều nhất:</b> “@top.Label” – @top.Value.ToString("0") đơn (@(Model.DonHuy == 0 ? 0 : (int)(top.Value * 100 / Model.DonHuy))% số đơn bị hủy)
+        @if (topDT != null) { <br /><span><b>Lý do đổi trả nhiều nhất:</b> “@topDT.Label” – @topDT.Value.ToString("0") yêu cầu</span> }</div>
+}
+<div class="grid2 mt">
+    <div class="card"><h3>Lý do hủy đơn</h3>@await Html.PartialAsync("_HBar", ((IReadOnlyList<ChartPoint>)Model.LyDoHuy, false))</div>
+    <div class="card"><h3>Lý do đổi trả</h3>@await Html.PartialAsync("_HBar", ((IReadOnlyList<ChartPoint>)Model.LyDoDoiTra, false))</div>
+</div>
+<div class="card mt"><h3>Đơn hàng theo trạng thái</h3>@await Html.PartialAsync("_Donut", (IReadOnlyList<ChartPoint>)Model.TheoTrangThai)</div>

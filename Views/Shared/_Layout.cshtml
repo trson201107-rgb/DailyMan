@@ -1,0 +1,70 @@
+@using System.Security.Claims
+@{
+    var path = Context.Request.Path.Value ?? "/";
+    var isAuth = User.Identity?.IsAuthenticated == true;
+}
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>@(ViewData["Title"] != null ? ViewData["Title"] + " | " : "")dailyman – Thời trang nam thường nhật</title>
+    <link rel="icon" type="image/svg+xml" href="~/favicon.svg">
+    <link rel="icon" type="image/png" sizes="32x32" href="~/favicon-32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="~/favicon-16.png">
+    <link rel="shortcut icon" href="~/favicon.ico">
+    <link rel="apple-touch-icon" href="~/apple-touch-icon.png">
+    <meta name="theme-color" content="#1B1B1B">
+    <link rel="stylesheet" href="~/css/style.css" asp-append-version="true">
+</head>
+<body class="has-bottom">
+<div class="topbar">Miễn phí vận chuyển cho đơn từ @Fmt.Money(Const.FREE_SHIP_FROM) · Đổi trả trong @Const.RETURN_DAYS ngày</div>
+<header class="header"><div class="container">
+    <a class="logo" asp-controller="Home" asp-action="Index">daily<b>man</b></a>
+    <nav class="nav">
+        <a asp-controller="Home" asp-action="Index" class="@(path == "/" ? "active" : "")">Trang chủ</a>
+        <a asp-controller="Shop" asp-action="Index" class="@(path.StartsWith("/Shop", StringComparison.OrdinalIgnoreCase) ? "active" : "")">Cửa hàng</a>
+        <a asp-controller="Shop" asp-action="Index" asp-route-tag="hot">Hot</a>
+        <a asp-controller="Shop" asp-action="Index" asp-route-tag="moi">Hàng mới</a>
+        <a asp-controller="Shop" asp-action="Index" asp-route-tag="giam">Giảm giá</a>
+    </nav>
+    <form class="search" asp-controller="Shop" asp-action="Index" method="get">
+        <input name="q" placeholder="Tìm áo thun, quần jeans..." value="@Context.Request.Query["q"]"><button type="submit">Tìm</button>
+    </form>
+    <div class="hdr-right">
+        @if (isAuth)
+        {
+            <div class="menu"><a href="#" tabindex="0">👤 @User.Identity!.Name</a>
+                <div class="drop">
+                    <a asp-controller="Account" asp-action="Profile">Hồ sơ của tôi</a>
+                    <a asp-controller="Account" asp-action="Addresses">Sổ địa chỉ</a>
+                    <a asp-controller="Order" asp-action="Index">Đơn hàng của tôi</a>
+                    @if (User.IsInRole(Const.ROLE_ADMIN) || User.IsInRole(Const.ROLE_STAFF))
+                    { <a asp-area="Admin" asp-controller="Dashboard" asp-action="Index">Trang quản trị</a> }
+                    <form asp-controller="Account" asp-action="Logout" method="post"><button type="submit">Đăng xuất</button></form>
+                </div></div>
+        }
+        else
+        {
+            <a asp-controller="Account" asp-action="Login">Đăng nhập</a>
+            <a asp-controller="Account" asp-action="Register" class="btn sm">Đăng ký</a>
+        }
+        <a class="cart-link" asp-controller="Cart" asp-action="Index">🛒@await Component.InvokeAsync("CartCount")</a>
+    </div>
+</div></header>
+<main class="container">
+    @await Html.PartialAsync("_Flash")
+    @RenderBody()
+</main>
+<footer class="footer"><div class="container">© dailyman – Website quản lý thời trang nam thường nhật</div></footer>
+<nav class="bottom-nav" aria-label="Điều hướng nhanh">
+    <a asp-controller="Home" asp-action="Index" class="@(path == "/" ? "on" : "")"><b>🏠</b>Trang chủ</a>
+    <a asp-controller="Shop" asp-action="Index"><b>🛍</b>Cửa hàng</a>
+    <a asp-controller="Cart" asp-action="Index"><b>🛒</b>Giỏ hàng</a>
+    <a asp-controller="Order" asp-action="Index"><b>📦</b>Đơn hàng</a>
+    <a href="@(isAuth ? Url.Action("Profile", "Account") : Url.Action("Login", "Account"))"><b>👤</b>Tài khoản</a>
+</nav>
+<script src="~/js/main.js" asp-append-version="true"></script>
+@await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>
